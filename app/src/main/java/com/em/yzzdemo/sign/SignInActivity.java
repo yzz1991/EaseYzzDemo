@@ -1,4 +1,4 @@
-package com.em.yzzdemo.ui.sign;
+package com.em.yzzdemo.sign;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -13,7 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.em.yzzdemo.R;
-import com.em.yzzdemo.ui.main.MainActivity;
+import com.em.yzzdemo.main.MainActivity;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 
