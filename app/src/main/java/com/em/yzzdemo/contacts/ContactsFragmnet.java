@@ -2,6 +2,7 @@ package com.em.yzzdemo.contacts;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,11 @@ import android.widget.LinearLayout;
 
 import com.em.yzzdemo.BaseFragment;
 import com.em.yzzdemo.R;
+import com.em.yzzdemo.bean.UserEntity;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -27,6 +33,7 @@ public class ContactsFragmnet extends BaseFragment {
 
 
     private ContactsAdapter mAdapter;
+    private List<UserEntity> mUserList;
 
     @Nullable
     @Override
@@ -47,8 +54,13 @@ public class ContactsFragmnet extends BaseFragment {
 
     //初使化联系人列表
     private void initView() {
-        mActivity = getParentFragment().getActivity();
-//        mAdapter = new ContactsAdapter(mActivity);
+        mActivity = getActivity();
+        mUserList = new ArrayList<>();
+        mUserList.addAll(ContactsManager.getInstance(mActivity).getContactList().values());
+        mAdapter = new ContactsAdapter(mActivity, mUserList);
+        LinearLayoutManager manager = new LinearLayoutManager(mActivity);
+        contactsView.setLayoutManager(manager);
+        contactsView.setAdapter(mAdapter);
     }
 
 

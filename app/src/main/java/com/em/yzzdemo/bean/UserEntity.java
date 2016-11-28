@@ -13,6 +13,13 @@ public class UserEntity {
     // 联系人的昵称
     public String nickName;
 
+    public UserEntity(String userName) {
+        this.userName = userName;
+    }
+
+    public UserEntity() {
+    }
+
     public String getHeader() {
         return header;
     }

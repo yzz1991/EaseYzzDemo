@@ -4,7 +4,7 @@ package com.em.yzzdemo.utils;
  * Created by Geri on 2016/11/28.
  */
 
-public class SqlDBConstants {
+public class DBConstants {
     public static final String TB_USER = "contacts";
     // column name
     public static final String COL_USERNAME = "userName";

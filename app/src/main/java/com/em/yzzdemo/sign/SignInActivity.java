@@ -4,8 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -15,7 +13,9 @@ import android.widget.Toast;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
+import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.main.MainActivity;
+import com.em.yzzdemo.sql.ContactsDao;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.exceptions.HyphenateException;
@@ -36,17 +36,7 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
     @BindView(R.id.bt_signIn) Button btSignIn;
     @BindView(R.id.tv_signUp) TextView tvSignUp;
     private ProgressDialog mDialog;
-    private List<String> userList;
 
-    private Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            for(int i = 0 ;i < userList.size(); i++){
-
-            }
-        }
-    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -106,7 +96,17 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
                 EMClient.getInstance().chatManager().loadAllConversations();
                 EMClient.getInstance().groupManager().loadAllGroups();
                 //获取服务器联系人
-                getFriendList();
+                try {
+                    List<String> userList = EMClient.getInstance().contactManager().getAllContactsFromServer();
+                    UserEntity userEntity= null;
+
+                    for(int i=0; i<userList.size();i++){
+                        userEntity = new UserEntity(userList.get(i));
+                        ContactsDao.getInstance(mActivity).saveUser(userEntity);
+                    }
+                } catch (HyphenateException e) {
+                    e.printStackTrace();
+                }
                 startActivity(new Intent(mActivity,MainActivity.class));
                 finish();
             }
@@ -121,26 +121,6 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
 
             }
         });
-    }
-
-    //获取好友列表
-    public void getFriendList() {
-        new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    userList = EMClient.getInstance().contactManager().getAllContactsFromServer();
-                    handler.sendEmptyMessage(0);
-                } catch (HyphenateException e) {
-                    e.printStackTrace();
-                    int errorCode = e.getErrorCode();
-                    switch (errorCode) {
-
-                    }
-                }
-            }
-        }).start();
     }
 
     @Override

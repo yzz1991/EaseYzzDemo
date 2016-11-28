@@ -10,7 +10,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class ContactsHelper extends SQLiteOpenHelper {
     public ContactsHelper(Context context) {
-        super(context, "contacts.db", null, 0);
+        super(context, "contacts.db", null, 1);
     }
 
     @Override
