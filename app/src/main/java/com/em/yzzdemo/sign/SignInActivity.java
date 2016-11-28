@@ -4,7 +4,8 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Paint;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.os.Handler;
+import android.os.Message;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -12,10 +13,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.main.MainActivity;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.exceptions.HyphenateException;
+
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,15 +29,24 @@ import butterknife.ButterKnife;
  * Created by Geri on 2016/11/25.
  */
 
-public class SignInActivity extends AppCompatActivity implements View.OnClickListener {
+public class SignInActivity extends BaseActivity implements View.OnClickListener {
 
     @BindView(R.id.sign_input_user) EditText signInputUser;
     @BindView(R.id.sign_input_pwd) EditText signInputPwd;
     @BindView(R.id.bt_signIn) Button btSignIn;
     @BindView(R.id.tv_signUp) TextView tvSignUp;
     private ProgressDialog mDialog;
-//    private EditText signInputUser;
-//    private EditText signInputPwd;
+    private List<String> userList;
+
+    private Handler handler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            for(int i = 0 ;i < userList.size(); i++){
+
+            }
+        }
+    };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,16 +58,13 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         setContentView(R.layout.activity_signin);
-        ButterKnife.bind(this);
+        mActivity = this;
+        ButterKnife.bind(mActivity);
         initData();
 
     }
 
     private void initData() {
-//        signInputUser = (EditText) findViewById(R.id.sign_input_user);
-//        signInputPwd = (EditText) findViewById(R.id.sign_input_pwd);
-//        Button btSignIn = (Button) findViewById(R.id.bt_signIn);
-//        TextView tvSignUp = (TextView) findViewById(R.id.tv_signUp);
         //下划线
         tvSignUp.getPaint().setFlags(Paint. UNDERLINE_TEXT_FLAG );
         btSignIn.setOnClickListener(this);
@@ -69,7 +80,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 break;
             //注册
             case R.id.tv_signUp:
-                startActivity(new Intent(this,SignUpActivity.class));
+                startActivity(new Intent(mActivity,SignUpActivity.class));
                 finish();
                 break;
         }
@@ -77,7 +88,7 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
     //登录
     public void signIn(){
-        mDialog = new ProgressDialog(this);
+        mDialog = new ProgressDialog(mActivity);
         mDialog.setMessage(getResources().getString(R.string.sign_in_dialog));
         mDialog.show();
         String username = signInputUser.getText().toString().trim();
@@ -94,13 +105,15 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
                 //登录成功后，将所有会话和群组加载到内存
                 EMClient.getInstance().chatManager().loadAllConversations();
                 EMClient.getInstance().groupManager().loadAllGroups();
-                startActivity(new Intent(SignInActivity.this,MainActivity.class));
+                //获取服务器联系人
+                getFriendList();
+                startActivity(new Intent(mActivity,MainActivity.class));
                 finish();
             }
 
             @Override
             public void onError(int i, String s) {
-                Toast.makeText(SignInActivity.this, "登录聊天服务器失败", Toast.LENGTH_SHORT).show();
+                Toast.makeText(mActivity, "登录聊天服务器失败", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -108,6 +121,26 @@ public class SignInActivity extends AppCompatActivity implements View.OnClickLis
 
             }
         });
+    }
+
+    //获取好友列表
+    public void getFriendList() {
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    userList = EMClient.getInstance().contactManager().getAllContactsFromServer();
+                    handler.sendEmptyMessage(0);
+                } catch (HyphenateException e) {
+                    e.printStackTrace();
+                    int errorCode = e.getErrorCode();
+                    switch (errorCode) {
+
+                    }
+                }
+            }
+        }).start();
     }
 
     @Override

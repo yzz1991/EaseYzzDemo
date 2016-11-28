@@ -11,4 +11,5 @@
     <string name="sign_up_register">注册</string>
     <string name="sign_up_hint">已经有账号，</string>
     <string name="sign_up_login">去登录</string>
+    <string name="contacts_group">Group</string>
 </resources>

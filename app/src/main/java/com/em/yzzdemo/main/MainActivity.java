@@ -1,12 +1,12 @@
 package com.em.yzzdemo.main;
 
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 
+import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.contacts.ContactsFragmnet;
 import com.em.yzzdemo.conversation.ConversationFragment;
@@ -15,7 +15,7 @@ import com.em.yzzdemo.setting.SettingFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @BindView(R.id.main_toolbar)
     Toolbar toolbar;
@@ -33,7 +33,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
+        mActivity = this;
+        ButterKnife.bind(mActivity);
 
 
         initView();
@@ -48,16 +49,18 @@ public class MainActivity extends AppCompatActivity {
         getSupportActionBar().setTitle(mToolbars[0]);
         //toolbar字体颜色
         toolbar.setTitleTextColor(0xffffffff);
-        //
+        //创建联系人、会话、设置fragment
         mContactsFragmnet = new ContactsFragmnet();
         mConversationFragment = new ConversationFragment();
         mSettingFragment = new SettingFragment();
         mFragment = new Fragment[]{mContactsFragmnet,mConversationFragment,mSettingFragment};
         tabLayout.setupWithViewPager(viewPager);
+        //设置tabLayout选中前后的字体颜色
         tabLayout.setTabTextColors(0x89ffffff,0xffffffff);
+        //viewpager适配器
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mToolbars,mFragment);
         viewPager.setAdapter(adapter);
-        viewPager.setCurrentItem(0);
+        //viewpager监听
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
