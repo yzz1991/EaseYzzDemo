@@ -13,4 +13,6 @@
 
     <color name="contacts_group_bg">#fafbfc</color>
     <color name="contacts_group_font">#000000</color>
+    <color name="contacts_user_font">#1b1d1d</color>
+    <color name="group_font">#8798a4</color>
 </resources>

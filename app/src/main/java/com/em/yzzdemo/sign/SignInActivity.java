@@ -92,6 +92,12 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
         EMClient.getInstance().login(username, pwd, new EMCallBack() {
             @Override
             public void onSuccess() {
+                //同步群组到本地
+                try {
+                    EMClient.getInstance().groupManager().getJoinedGroupsFromServer();
+                } catch (HyphenateException e) {
+                    e.printStackTrace();
+                }
                 //登录成功后，将所有会话和群组加载到内存
                 EMClient.getInstance().chatManager().loadAllConversations();
                 EMClient.getInstance().groupManager().loadAllGroups();

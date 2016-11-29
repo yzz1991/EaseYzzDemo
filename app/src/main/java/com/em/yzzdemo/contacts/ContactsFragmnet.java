@@ -1,5 +1,6 @@
 package com.em.yzzdemo.contacts;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,7 +16,6 @@ import com.em.yzzdemo.bean.UserEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -61,6 +61,14 @@ public class ContactsFragmnet extends BaseFragment {
         LinearLayoutManager manager = new LinearLayoutManager(mActivity);
         contactsView.setLayoutManager(manager);
         contactsView.setAdapter(mAdapter);
+
+        //点击进入群组
+        contactsGroupLl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(mActivity,GroupActivity.class));
+            }
+        });
     }
 
 

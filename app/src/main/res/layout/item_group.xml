@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/group_item_height"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="62dp"
+            android:layout_height="62dp"
+            android:padding="14dp"
+            android:src="@mipmap/header2" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+            <TextView
+                android:id="@+id/tv_groupName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="tjhbkjhlkh;"
+                android:textColor="@color/contacts_user_font"
+                android:textSize="@dimen/contacts_user_font_16"
+                android:layout_marginBottom="@dimen/group_item_text"/>
+            <TextView
+                android:id="@+id/tv_groupMembersNum"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="13个成员"
+                android:textColor="#8798a4"
+                android:textSize="@dimen/sign_in_input_font_14"
+                android:visibility="gone"/>
+        </LinearLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@mipmap/chevron_right"
+            android:layout_marginRight="@dimen/contacts_group_right_iv_margin"/>
+
+    </LinearLayout>
+
+</LinearLayout>
