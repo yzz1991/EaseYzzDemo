@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -47,7 +46,6 @@ public class GroupActivity extends BaseActivity implements View.OnClickListener 
         groupSearch.setOnClickListener(this);
         //从本地加载群组列表
         mGroupList = EMClient.getInstance().groupManager().getAllGroups();
-        Log.i("groupList", mGroupList.size()+"");
         LinearLayoutManager manager = new LinearLayoutManager(mActivity);
         GroupAdapter adapter = new GroupAdapter(mActivity, mGroupList);
         groupRecyclerView.setLayoutManager(manager);

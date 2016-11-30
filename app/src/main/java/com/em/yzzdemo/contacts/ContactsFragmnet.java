@@ -69,6 +69,9 @@ public class ContactsFragmnet extends BaseFragment {
                 startActivity(new Intent(mActivity,GroupActivity.class));
             }
         });
+
+
+
     }
 
 
