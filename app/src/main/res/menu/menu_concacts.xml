@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".chat.ChatActivity">
+    <item android:id="@+id/action_contacts_search"
+        android:title="call"
+        android:orderInCategory="60"
+        android:icon="@mipmap/search_light"
+        app:showAsAction="ifRoom" />
+
+    <item android:id="@+id/action_contacts_user"
+        android:title="video"
+        android:orderInCategory="80"
+        android:icon="@mipmap/app_bar_add_contact"
+        app:showAsAction="ifRoom" />
+
+</menu>
