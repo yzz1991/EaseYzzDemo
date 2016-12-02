@@ -24,7 +24,7 @@
 
     //群组
     <dimen name="group_back_width">48dp</dimen>
-    <dimen name="group_back_height">58dp</dimen>
+    <dimen name="group_back_height">56dp</dimen>
     <dimen name="group_back_padding">16dp</dimen>
     <dimen name="group_item_height">73dp</dimen>
     <dimen name="group_item_text">4dp</dimen>

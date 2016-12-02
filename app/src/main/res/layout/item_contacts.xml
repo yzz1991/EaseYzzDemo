@@ -5,6 +5,7 @@
     android:orientation="horizontal">
 
     <LinearLayout
+        android:id="@+id/item_ll"
         android:layout_width="match_parent"
         android:layout_height="@dimen/contacts_user_item"
         android:orientation="horizontal"
@@ -25,6 +26,10 @@
             android:text="tjhbkjhlkh;"
             android:textColor="@color/contacts_user_font"
             android:textSize="@dimen/contacts_user_font_16" />
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
     </LinearLayout>
 
 </LinearLayout>

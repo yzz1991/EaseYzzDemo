@@ -13,6 +13,8 @@ import android.widget.LinearLayout;
 import com.em.yzzdemo.BaseFragment;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.bean.UserEntity;
+import com.em.yzzdemo.callback.OnItemClickListener;
+import com.em.yzzdemo.chat.ChatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +32,7 @@ public class ContactsFragmnet extends BaseFragment {
     RecyclerView contactsView;
     @BindView(R.id.contacts_group_ll)
     LinearLayout contactsGroupLl;
-
-
+    private ContactsClickPopWindow addPopWindow;
     private ContactsAdapter mAdapter;
     private List<UserEntity> mUserList;
 
@@ -70,9 +71,45 @@ public class ContactsFragmnet extends BaseFragment {
             }
         });
 
+        //recycleView点击事件
+        mAdapter.setOnItemClickListener(new OnItemClickListener() {
 
+
+
+            @Override
+            public void onItemClick(View view, int position) {
+                addPopWindow = new ContactsClickPopWindow(mActivity,itemsOnClick);
+                addPopWindow.showPopupWindow(view);
+            }
+
+            @Override
+            public void onItemLongClick(View view, int position) {
+
+            }
+        });
 
     }
+
+    //为弹出窗口实现监听类
+    private View.OnClickListener itemsOnClick = new View.OnClickListener(){
+
+        public void onClick(View v) {
+            addPopWindow.dismiss();
+            addPopWindow.backgroundAlpha(mActivity,1f);
+            switch (v.getId()) {
+                case R.id.pop_call:
+
+                    break;
+                case R.id.pop_chat:
+                    startActivity(new Intent(mActivity, ChatActivity.class));
+                    break;
+                case R.id.pop_video:
+
+                    break;
+            }
+        }
+
+    };
 
 
 }
