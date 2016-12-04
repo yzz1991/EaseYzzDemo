@@ -3,17 +3,17 @@ package com.em.yzzdemo.main;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.view.View;
+import android.widget.ImageView;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
-import com.em.yzzdemo.contacts.ContactsFragmnet;
+import com.em.yzzdemo.contacts.ContactsFragment;
 import com.em.yzzdemo.conversation.ConversationFragment;
 import com.em.yzzdemo.setting.SettingFragment;
 
@@ -29,11 +29,10 @@ public class MainActivity extends BaseActivity {
     @BindView(R.id.main_vp)
     ViewPager viewPager;
     private String[] mToolbars;
-    private ContactsFragmnet mContactsFragmnet;
+    private ContactsFragment mContactsFragment;
     private ConversationFragment mConversationFragment;
     private SettingFragment mSettingFragment;
     private Fragment[] mFragment;
-    private int mCurrentPageIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,10 +40,7 @@ public class MainActivity extends BaseActivity {
         setContentView(R.layout.activity_main);
         mActivity = this;
         ButterKnife.bind(mActivity);
-
-
         initView();
-        
     }
 
     private void initView() {
@@ -57,16 +53,14 @@ public class MainActivity extends BaseActivity {
         //声明toolbar
         setSupportActionBar(toolbar);
         //创建联系人、会话、设置fragment
-        mContactsFragmnet = new ContactsFragmnet();
+        mContactsFragment = new ContactsFragment();
         mConversationFragment = new ConversationFragment();
         mSettingFragment = new SettingFragment();
-        mFragment = new Fragment[]{mContactsFragmnet,mConversationFragment,mSettingFragment};
-        tabLayout.setupWithViewPager(viewPager);
-        //设置tabLayout选中前后的字体颜色
-        tabLayout.setTabTextColors(0x89ffffff,0xffffffff);
+        mFragment = new Fragment[]{mContactsFragment,mConversationFragment,mSettingFragment};
         //viewpager适配器
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mToolbars,mFragment);
         viewPager.setAdapter(adapter);
+        setupTabLayout();
         //viewpager监听
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -76,14 +70,16 @@ public class MainActivity extends BaseActivity {
 
             @Override
             public void onPageSelected(int position) {
-                mCurrentPageIndex = position;
                 toolbar.setTitle(mToolbars[position]);
                 if(position == 0){
                     toolbar.getMenu().clear();
+                    tabLayout.getTabAt(0).getCustomView().findViewById(R.id.img_tab_item);
                     toolbar.inflateMenu(R.menu.menu_concacts);
                 }else if(position == 1){
                     toolbar.getMenu().clear();
-                    toolbar.inflateMenu(R.menu.menu_chat);
+                    toolbar.inflateMenu(R.menu.menu_conversation);
+                }else{
+                    toolbar.getMenu().clear();
                 }
             }
 
@@ -95,23 +91,50 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    //设置tabLayout
+    private void setupTabLayout() {
+        //设置下划线为白色
+        tabLayout.setSelectedTabIndicatorColor(0xffffffff);
+        //设置tablayout和viewpager绑定
+        tabLayout.setupWithViewPager(viewPager);
+        for (int i = 0; i < 3; i++) {
+            //加载布局
+            View view = LayoutInflater.from(this).inflate(R.layout.main_tab_layout_item, null);
+            ImageView imageView = (ImageView) view.findViewById(R.id.img_tab_item);
+            if (i == 0) {
+                imageView.setImageDrawable(
+                        getResources().getDrawable(R.drawable.em_tab_contacts_selector));
+            } else if (i == 1) {
+                imageView.setImageDrawable(
+                        getResources().getDrawable(R.drawable.em_tab_chats_selector));
+            } else {
+                imageView.setImageDrawable(
+                        getResources().getDrawable(R.drawable.em_tab_settings_selector));
+            }
+            //设置view给tablayout
+            tabLayout.getTabAt(i).setCustomView(view);
+        }
+    }
+
     //设定菜单各按钮的点击动作
     private Toolbar.OnMenuItemClickListener onMenuItemClick = new Toolbar.OnMenuItemClickListener() {
 
         @Override
         public boolean onMenuItemClick(MenuItem menuItem) {
             switch (menuItem.getItemId()) {
-                case R.id.action_call:
-                    Toast.makeText(mActivity, "call", Toast.LENGTH_SHORT).show();
+
+                case R.id.menu_create_group:
+//                    startActivity(new Intent(MainActivity.this, InviteMembersActivity.class));
                     break;
-                case R.id.action_video:
-                    Toast.makeText(mActivity, "video", Toast.LENGTH_SHORT).show();
+
+                case R.id.menu_public_groups:
+//                    startActivity(new Intent(MainActivity.this, PublicGroupsListActivity.class));
                     break;
-                case R.id.action_more:
-                    Toast.makeText(mActivity, "more", Toast.LENGTH_SHORT).show();
+                case R.id.menu_add_contacts:
+//                    startActivity(new Intent(MainActivity.this, AddContactsActivity.class));
                     break;
             }
-            return true;
+            return false;
         }
     };
 
@@ -119,45 +142,12 @@ public class MainActivity extends BaseActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         if (viewPager.getCurrentItem() == 0) {
             toolbar.inflateMenu(R.menu.menu_concacts);
-            setSearchViewQueryListener();
         } else if (viewPager.getCurrentItem() == 1) {
-            toolbar.inflateMenu(R.menu.menu_chat);
-            setSearchViewQueryListener();
+            toolbar.inflateMenu(R.menu.menu_conversation);
         }
         toolbar.setOnMenuItemClickListener(onMenuItemClick);
-        return super.onCreateOptionsMenu(menu);
+        return true;
     }
 
-    private void setSearchViewQueryListener() {
 
-        SearchView searchView;
-        if (mCurrentPageIndex == 0) {
-            searchView = (SearchView) toolbar.getMenu().findItem(R.id.action_contacts_search).getActionView();
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override public boolean onQueryTextSubmit(String query) {
-                    return true;
-                }
-
-                @Override public boolean onQueryTextChange(String newText) {
-//                    mContactsFragmnet.filter(newText);
-                    return true;
-                }
-            });
-        } else if (mCurrentPageIndex == 1) {
-            searchView = (SearchView) MenuItemCompat.getActionView(
-                    toolbar.getMenu().findItem(R.id.action_conversation_search));
-            // search conversations list
-            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-                @Override public boolean onQueryTextSubmit(String query) {
-//                    mConversationFragment.filter(query);
-                    return true;
-                }
-
-                @Override public boolean onQueryTextChange(String newText) {
-//                    mConversationFragment.filter(newText);
-                    return true;
-                }
-            });
-        }
-    }
 }

@@ -26,7 +26,7 @@ import butterknife.ButterKnife;
  * Created by Geri on 2016/11/27.
  */
 
-public class ContactsFragmnet extends BaseFragment {
+public class ContactsFragment extends BaseFragment {
 
     @BindView(R.id.contacts_view)
     RecyclerView contactsView;
