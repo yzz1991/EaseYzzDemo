@@ -28,6 +28,7 @@ public class MainActivity extends BaseActivity {
     TabLayout tabLayout;
     @BindView(R.id.main_vp)
     ViewPager viewPager;
+
     private String[] mToolbars;
     private ContactsFragment mContactsFragment;
     private ConversationFragment mConversationFragment;
@@ -45,7 +46,7 @@ public class MainActivity extends BaseActivity {
 
     private void initView() {
         //设置toolbar值
-        mToolbars = new String[]{"联系人","会话","设置"};
+        mToolbars = new String[]{"联系人", "会话", "设置"};
         //设置选中第一个
         toolbar.setTitle(mToolbars[0]);
         //toolbar字体颜色
@@ -56,11 +57,13 @@ public class MainActivity extends BaseActivity {
         mContactsFragment = new ContactsFragment();
         mConversationFragment = new ConversationFragment();
         mSettingFragment = new SettingFragment();
-        mFragment = new Fragment[]{mContactsFragment,mConversationFragment,mSettingFragment};
+        mFragment = new Fragment[]{mContactsFragment, mConversationFragment, mSettingFragment};
         //viewpager适配器
-        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(),mToolbars,mFragment);
+        ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), mToolbars, mFragment);
         viewPager.setAdapter(adapter);
+        //设置tabLayout
         setupTabLayout();
+
         //viewpager监听
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -71,14 +74,14 @@ public class MainActivity extends BaseActivity {
             @Override
             public void onPageSelected(int position) {
                 toolbar.setTitle(mToolbars[position]);
-                if(position == 0){
+                if (position == 0) {
                     toolbar.getMenu().clear();
                     tabLayout.getTabAt(0).getCustomView().findViewById(R.id.img_tab_item);
                     toolbar.inflateMenu(R.menu.menu_concacts);
-                }else if(position == 1){
+                } else if (position == 1) {
                     toolbar.getMenu().clear();
                     toolbar.inflateMenu(R.menu.menu_conversation);
-                }else{
+                } else {
                     toolbar.getMenu().clear();
                 }
             }

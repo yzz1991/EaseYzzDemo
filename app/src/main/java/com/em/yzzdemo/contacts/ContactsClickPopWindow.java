@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.em.yzzdemo.R;
 
@@ -19,20 +20,22 @@ import com.em.yzzdemo.R;
 public class ContactsClickPopWindow extends PopupWindow {
     private View conentView;
 
-    public ContactsClickPopWindow(final Activity context, View.OnClickListener itemsOnClick) {
+    public ContactsClickPopWindow(final Activity context, View.OnClickListener itemsOnClick, String username) {
         super(context);
-        initView(context,itemsOnClick);
+        initView(context,itemsOnClick,username);
 
 
     }
 
-    private void initView(final Activity context,View.OnClickListener itemsOnClick) {
+    private void initView(final Activity context,View.OnClickListener itemsOnClick,String username) {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         conentView = inflater.inflate(R.layout.pop_contacts, null);
         LinearLayout callView = (LinearLayout) conentView.findViewById(R.id.pop_call);
         LinearLayout chatView = (LinearLayout) conentView.findViewById(R.id.pop_chat);
         LinearLayout videoView = (LinearLayout) conentView.findViewById(R.id.pop_video);
+        TextView userNameView = (TextView) conentView.findViewById(R.id.tv_username);
+        userNameView.setText(username);
         // 设置SelectPicPopupWindow的View
         this.setContentView(conentView);
         // 设置SelectPicPopupWindow弹出窗体的宽
