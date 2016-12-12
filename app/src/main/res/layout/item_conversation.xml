@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/item_ll"
+        android:layout_width="match_parent"
+        android:layout_height="77.5dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/iv_avatar"
+            android:layout_width="@dimen/contacts_user_header"
+            android:layout_height="@dimen/contacts_user_header"
+            android:layout_marginLeft="16dp"
+            android:src="@mipmap/header1" />
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="16.5dp"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/tv_username"
+                android:layout_width="wrap_content"
+                android:layout_height="24dp"
+                android:text="tjhbkjhlkh;"
+                android:textColor="#1b1d1d"
+                android:textSize="@dimen/contacts_user_font_16"
+                android:gravity="center_vertical"/>
+            <TextView
+                android:id="@+id/last_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="message"
+                android:textSize="14sp"
+                android:textColor="#546e7a"
+                android:gravity="center_vertical"/>
+        </LinearLayout>
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"/>
+        <TextView
+            android:id="@+id/conversation_time"
+            android:layout_width="wrap_content"
+            android:layout_height="14dp"
+            android:text="时间"
+            android:layout_marginRight="16dp"
+            android:textSize="12sp"
+            android:textColor="#8798a4"
+            android:gravity="center_vertical"/>
+    </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#e0e0e0"
+        android:layout_marginLeft="72dp"/>
+
+</LinearLayout>

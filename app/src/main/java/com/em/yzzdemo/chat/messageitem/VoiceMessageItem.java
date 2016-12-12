@@ -14,12 +14,12 @@ public class VoiceMessageItem extends MessageItem {
     }
 
     @Override
-    protected void onInflateView() {
+    public void onSetupView(EMMessage message) {
 
     }
 
     @Override
-    public void onSetupView(EMMessage message) {
+    protected void onInflateView() {
 
     }
 }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -35,6 +36,8 @@ public abstract class MessageItem extends LinearLayout {
     protected TextView msgTimeView;
     // 显示聊天内容、文件消息就显示文件名
     protected TextView contentView;
+    //显示图片内容
+    protected ImageView imageContextView;
 
     public MessageItem(Context context, ChatMessageAdapter adapter, int viewType) {
         super(context);

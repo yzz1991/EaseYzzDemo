@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="8dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|right"
+        android:orientation="horizontal">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/image_username"
+                android:layout_width="wrap_content"
+                android:layout_height="14dp"
+                android:minWidth="57.5dp"
+                android:text="Demo"
+                android:textColor="#8798a4"
+                android:textSize="10sp"
+                android:paddingLeft="8dp"
+                android:layout_marginBottom="2.5dp"/>
+            <LinearLayout
+                android:id="@+id/layout_bubble"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bubble_msg_send"
+                android:gravity="right"
+                android:orientation="vertical"
+                android:paddingBottom="4dp"
+                android:paddingLeft="4dp"
+                android:paddingRight="4dp"
+                android:paddingTop="4dp">
+                <!--消息内容-->
+                <ImageView
+                    android:id="@+id/image_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/message_time"
+                android:layout_width="wrap_content"
+                android:layout_height="14dp"
+                android:minWidth="42.5dp"
+                android:text="11:30 AM"
+                android:textColor="#8798a4"
+                android:textSize="10sp"
+                android:paddingLeft="8dp"
+                android:layout_marginTop="2.5dp"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@mipmap/header2"
+            android:layout_marginLeft="18dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="25dp"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -75,4 +75,22 @@ public class ConstantsUtils {
     // 礼物消息
     public static final int MSG_TYPE_GIFT_SEND = 0x15;
     public static final int MSG_TYPE_GIFT_RECEIVED = 0x16;
+
+
+    /**
+     * 当界面跳转需要返回结果时，定义跳转请求码
+     */
+    public static final int REQUEST_CODE_CAMERA = 0x01;
+    public static final int REQUEST_CODE_GALLERY = 0x02;
+    public static final int REQUEST_CODE_VIDEO = 0x03;
+    public static final int REQUEST_CODE_FILE = 0x04;
+    public static final int REQUEST_CODE_LOCATION = 0x05;
+    public static final int REQUEST_CODE_GIFT = 0x06;
+    public static final int REQUEST_CODE_CONTACTS = 0x07;
+
+    /**
+     * 动态获取权限请求码
+     */
+    public static final int REQUEST_CODE_ASK_CAMERA = 0x01;
+
 }

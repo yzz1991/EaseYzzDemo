@@ -1,7 +1,16 @@
 package com.em.yzzdemo.chat;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -19,6 +28,8 @@ import android.widget.Toast;
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.utils.ConstantsUtils;
+import com.em.yzzdemo.utils.DateUtil;
+import com.em.yzzdemo.utils.FileUtil;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
@@ -26,6 +37,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMessage;
 
+import java.io.File;
 import java.util.List;
 
 import butterknife.BindView;
@@ -59,6 +71,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private EMGroup group;
     private EMMessageListener mMessageListener;
     private ChatMessageAdapter mAdapter;
+    //图片
+    private Uri mCameraImageUri = null;
+    private File saveFile;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -205,10 +220,21 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 //            morePopWindow.backgroundAlpha(mActivity,1f);
             switch (v.getId()) {
                 case R.id.item_camera:
-
+                    if (Build.VERSION.SDK_INT >= 23) {
+                        int cameraPermission = ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA);
+                        if(cameraPermission != PackageManager.PERMISSION_GRANTED){
+                            ActivityCompat.requestPermissions(mActivity,new String[]{Manifest.permission.CAMERA},
+                                    ConstantsUtils.REQUEST_CODE_ASK_CAMERA);
+                            return;
+                        }else{
+                            openCamera();
+                        }
+                    } else {
+                        openCamera();
+                    }
                     break;
                 case R.id.item_picture:
-
+                    openGallery();
                     break;
                 case R.id.item_location:
 
@@ -304,6 +330,106 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         // 发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
     }
+
+    /**
+     * 打开相机去拍摄图片发送
+     */
+    private void openCamera() {
+        // 定义拍照后图片保存的路径以及文件名
+        String imagePath =
+                FileUtil.getDCIM() + "IMG" + DateUtil.getDateTimeNoSpacing() + ".jpg";
+        // 激活相机
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // 判断存储卡是否可以用，可用进行存储
+        if (FileUtil.hasSdcard()) {
+            // 根据文件路径解析成Uri
+            mCameraImageUri = Uri.fromFile(new File(imagePath));
+            // 将Uri设置为媒体输出的目标，目的就是为了等下拍照保存在自己设定的路径
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, mCameraImageUri);
+        }
+        // 根据 Intent 启动一个带有返回值的 Activity，这里启动的就是相机，返回选择图片的地址
+        mActivity.startActivityForResult(intent, ConstantsUtils.REQUEST_CODE_CAMERA);
+    }
+
+    /**
+     * 打开系统图库，去进行选择图片
+     */
+    private void openGallery() {
+        Intent intent = null;
+        if (Build.VERSION.SDK_INT < 19) {
+            intent = new Intent();
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            // 设置intent要选择的文件类型，这里用设置为image 图片类型
+            intent.setType("image/*");
+        } else {
+            // 在Android 系统版本大于19 上，调用系统选择图片方法稍有不同
+            intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        }
+        mActivity.startActivityForResult(intent, ConstantsUtils.REQUEST_CODE_GALLERY);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode != RESULT_OK) {
+            return;
+        }
+        switch (requestCode) {
+            case ConstantsUtils.REQUEST_CODE_CAMERA:
+                // 相机拍摄的图片
+                sendImageMessage(mCameraImageUri.getPath());
+                mAdapter.refreshMessageData();
+                mAdapter.notifyDataSetChanged();
+                break;
+            case ConstantsUtils.REQUEST_CODE_GALLERY:
+                // 图库选择的图片，选择图片后返回获取返回的图片路径，然后发送图片
+                if (data != null) {
+                    Uri selectedImage = data.getData();
+                    String[] filePathColumns = {MediaStore.Images.Media.DATA};
+                    Cursor c = getContentResolver().query(selectedImage, filePathColumns, null, null, null);
+                    c.moveToFirst();
+                    int columnIndex = c.getColumnIndex(filePathColumns[0]);
+                    String image = c.getString(columnIndex);
+                    c.close();
+                    sendImageMessage(image);
+                    mAdapter.refreshMessageData();
+                    mAdapter.notifyDataSetChanged();
+                }
+                break;
+
+//            case ConstantsUtils.REQUEST_CODE_LOCATION:
+//                double latitude = data.getDoubleExtra("latitude", 0);
+//                double longitude = data.getDoubleExtra("longitude", 0);
+//                String locationAddress = data.getStringExtra("addrStr");
+//                if (locationAddress != null && !locationAddress.equals("")) {
+//                    sendLocationMessage(latitude, longitude, locationAddress);
+//                    mAdapter.refreshMessageData();
+//                    mAdapter.notifyDataSetChanged();
+//                } else {
+//                    Toast.makeText(ChatActivity.this, "unable_to_get_loaction", Toast.LENGTH_SHORT).show();
+//                }
+//                break;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        switch (requestCode) {
+            case ConstantsUtils.REQUEST_CODE_ASK_CAMERA:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission Granted
+                    openCamera();
+                } else {
+                    // Permission Denied
+                    Toast.makeText(mActivity, "CALL_PHONE Denied", Toast.LENGTH_SHORT)
+                            .show();
+                }
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
+
     /**
      * 注册消息监听
      */
