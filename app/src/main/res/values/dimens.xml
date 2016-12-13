@@ -33,4 +33,6 @@
     <dimen name="sign_in_input_font_16">16sp</dimen>
     <dimen name="sign_in_input_font_14">14sp</dimen>
     <dimen name="contacts_user_font_16">16sp</dimen>
+
+    <dimen name="ml_dimen_150">150dp</dimen>
 </resources>

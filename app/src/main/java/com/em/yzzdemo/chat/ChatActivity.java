@@ -27,6 +27,7 @@ import android.widget.Toast;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
+import com.em.yzzdemo.notification.Notifier;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.em.yzzdemo.utils.DateUtil;
 import com.em.yzzdemo.utils.FileUtil;
@@ -66,6 +67,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private String chatId;
     // 是否发送原图
     private boolean isOrigin = true;
+    // 当前是否在最底部
+    private boolean isBottom = true;
     private String id;
     private String userName;
     private EMGroup group;
@@ -74,6 +77,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     //图片
     private Uri mCameraImageUri = null;
     private File saveFile;
+    private LinearLayoutManager manager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -122,14 +126,53 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         setMessageListener();
 
         mAdapter = new ChatMessageAdapter(mActivity,id);
-        LinearLayoutManager manager = new LinearLayoutManager(mActivity);
+        manager = new LinearLayoutManager(mActivity);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(mAdapter);
-
+        recyclerView.addOnScrollListener(new MLRecyclerViewListener());
+        recyclerView.scrollToPosition(mConversation.getAllMessages().size() - 1);
 
     }
 
+    /**
+     * --------------------------- RecyclerView 滚动监听 --------------------------------
+     * 自定义实现RecyclerView的滚动监听，监听
+     */
+    class MLRecyclerViewListener extends RecyclerView.OnScrollListener {
+        /**
+         * 监听 RecyclerView 滚动状态的变化
+         *
+         * @param recyclerView 当前监听的 RecyclerView 控件
+         * @param newState RecyclerView 变化的状态
+         */
+        @Override public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            // 当 RecyclerView 停止滚动后判断当前是否在底部
+            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                int lastItem = manager.findLastVisibleItemPosition();
+                if (lastItem == (mAdapter.getItemCount() - 1)) {
+                    isBottom = true;
+                } else {
+                    isBottom = false;
+                }
+            }
+        }
 
+        /**
+         * RecyclerView 正在滚动中
+         *
+         * @param recyclerView 当前监听的 RecyclerView 控件
+         * @param dx 水平变化值，表示水平滚动，正表示向右，负表示向左
+         * @param dy 垂直变化值，表示上下滚动，正表示向下，负表示向上
+         */
+        @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            // 如果正在向上滚动，则也设置 isBottom 状态为false
+            if (dy < 0) {
+                isBottom = false;
+            }
+        }
+    }
 
     //输入框的监听
     private TextWatcher textWatcher = new TextWatcher() {
@@ -431,6 +474,22 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     }
 
     /**
+     * 重写父类的onNewIntent方法，防止打开两个聊天界面
+     *
+     * @param intent 带有参数的intent
+     */
+    @Override protected void onNewIntent(Intent intent) {
+        String chatId = intent.getStringExtra(ConstantsUtils.CHAT_ID);
+        // 判断 intent 携带的数据是否是当前聊天对象
+        if (chatId.equals(chatId)) {
+            super.onNewIntent(intent);
+        } else {
+            finish();
+            startActivity(intent);
+        }
+    }
+
+    /**
      * 注册消息监听
      */
     @Override
@@ -439,7 +498,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         EMClient.getInstance().chatManager().addMessageListener(mMessageListener);
     }
     /**
-     * 接收消息的监听
+     * ---------------------------------------------------------------接收消息的监听----------------------------------------------------------------------
      */
     private void setMessageListener() {
         mMessageListener = new EMMessageListener() {
@@ -456,6 +515,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                     }
                     // 判断消息是否是当前会话的消息
                     if (chatId.equals(username)) {
+                        // 设置消息为已读
+                        mConversation.markMessageAsRead(message.getMsgId());
                         mAdapter.refreshMessageData();
                         runOnUiThread(new Runnable() {
                             @Override
@@ -464,7 +525,14 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                             }
                         });
 
+                    }else {
+                        // 不发送通知
+                        isNotify = true;
                     }
+                }
+                if (isNotify) {
+                    // 如果消息不是当前会话的消息发送通知栏通知
+                    Notifier.getInstance().sendNotificationMessageList(list);
                 }
             }
             @Override

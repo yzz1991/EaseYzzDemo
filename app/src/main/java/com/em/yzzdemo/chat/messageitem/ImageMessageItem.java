@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.em.yzzdemo.MyApplication;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.chat.ChatMessageAdapter;
 import com.em.yzzdemo.utils.BitmapUtil;
@@ -25,8 +26,8 @@ import java.io.File;
  */
 public class ImageMessageItem extends MessageItem {
     // 定义图片缩略图限制
-    private int thumbnailsMax = 192;
-    private int thumbnailsMin = 192;
+    private int thumbnailsMax = MyApplication.getContext().getResources().getDimensionPixelSize(R.dimen.ml_dimen_150);
+    private int thumbnailsMin = 150;
     private int mViewWidth;
     private int mViewHeight;
 

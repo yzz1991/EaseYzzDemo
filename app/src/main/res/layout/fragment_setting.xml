@@ -3,9 +3,14 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
+    <Button
+        android:id="@+id/bt_logout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="设置"/>
+        android:layout_height="@dimen/sign_in_bt_36"
+        android:background="@drawable/sign_in_button_bg"
+        android:layout_marginTop="10dp"
+        android:text="退出登录"
+        android:textColor="@color/sign_in_input_bg"
+        android:textSize="@dimen/sign_in_input_font_14"/>
 
 </LinearLayout>
