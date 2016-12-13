@@ -6,7 +6,9 @@ import android.content.Context;
 import android.util.Log;
 
 import com.em.yzzdemo.chat.ChatActivity;
+import com.em.yzzdemo.event.ConnectionEvent;
 import com.em.yzzdemo.notification.Notifier;
+import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMConnectionListener;
 import com.hyphenate.EMContactListener;
@@ -16,6 +18,8 @@ import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.Iterator;
 import java.util.List;
@@ -168,20 +172,27 @@ public class MyHyphenate {
         mConnectionListener = new EMConnectionListener() {
             @Override
             public void onConnected() {
-
+                ConnectionEvent connectionEvent = new ConnectionEvent();
+                connectionEvent.setType(ConstantsUtils.CONNECTION_TYPE_SUCCESS);
+                EventBus.getDefault().post(connectionEvent);
             }
 
             @Override
             public void onDisconnected(int errorCode) {
+                ConnectionEvent connectionEvent = new ConnectionEvent();
                 if(errorCode == EMError.USER_REMOVED){
                     Log.i("MyHyphenate", "显示帐号已经被移除");
+                    connectionEvent.setType(ConstantsUtils.CONNECTION_TYPE_USER_REMOVED);
                     signOut(null);
                 }else if (errorCode == EMError.USER_LOGIN_ANOTHER_DEVICE) {
                     Log.i("MyHyphenate", "显示帐号在其他设备登录");
+                    connectionEvent.setType(ConstantsUtils.CONNECTION_TYPE_USER_LOGIN_ANOTHER_DEVICE);
                     signOut(null);
                 } else {
+                    connectionEvent.setType(ConstantsUtils.CONNECTION_TYPE_NOT_USE);
                     Log.i("MyHyphenate", "当前网络不可用，请检查网络设置");
                 }
+                EventBus.getDefault().post(connectionEvent);
             }
         };
         EMClient.getInstance().addConnectionListener(mConnectionListener);
@@ -196,7 +207,7 @@ public class MyHyphenate {
             public void onMessageReceived(List<EMMessage> list) {
                 ActivityManager am = (ActivityManager) mContext.getSystemService(ACTIVITY_SERVICE);
                 ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-                if(cn.getClassName().equals(ChatActivity.class)){
+                if(cn.getClassName().equals(ChatActivity.class.getName())){
                     return;
                 }
                 if (list.size() > 1) {

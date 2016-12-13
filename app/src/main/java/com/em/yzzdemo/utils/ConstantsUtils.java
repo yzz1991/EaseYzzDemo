@@ -93,4 +93,14 @@ public class ConstantsUtils {
      */
     public static final int REQUEST_CODE_ASK_CAMERA = 0x01;
 
+    /**
+     * evnetbus 事件状态码
+     */
+    public static final String CONNECTION_TYPE_SUCCESS = "connection_type_success";
+    public static final String CONNECTION_TYPE_USER_REMOVED = "connection_type_user_removed";
+    public static final String CONNECTION_TYPE_USER_LOGIN_ANOTHER_DEVICE = "connection_type_user_login_another_device";
+    public static final String CONNECTION_TYPE_NOT_USE = "connection_type_not_use";
+
+
+
 }

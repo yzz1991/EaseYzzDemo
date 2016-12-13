@@ -98,6 +98,7 @@ public class Notifier {
         // 设置通知栏点击意图（点击通知栏跳转到相应的页面）
         Intent intent = new Intent(mContext, ChatActivity.class);
         intent.putExtra(ConstantsUtils.CHAT_ID,message.getFrom());
+        intent.putExtra(ConstantsUtils.CHAT_TYPE, message.getChatType());
         PendingIntent pIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         mBuilder.setContentIntent(pIntent);
         // 通知首次出现在通知栏，带上升动画效果的（这里是一闪而过的，带有上升动画）

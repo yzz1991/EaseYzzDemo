@@ -479,9 +479,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
      * @param intent 带有参数的intent
      */
     @Override protected void onNewIntent(Intent intent) {
-        String chatId = intent.getStringExtra(ConstantsUtils.CHAT_ID);
+        String id = intent.getStringExtra(ConstantsUtils.CHAT_ID);
         // 判断 intent 携带的数据是否是当前聊天对象
-        if (chatId.equals(chatId)) {
+        if (chatId.equals(id)) {
             super.onNewIntent(intent);
         } else {
             finish();

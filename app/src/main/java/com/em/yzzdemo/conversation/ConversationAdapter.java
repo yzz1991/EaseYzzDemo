@@ -77,7 +77,7 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
             content = "空";
         }
         holder.messageView.setText(content);
-        holder.timeView.setText(DateUtil.getRelativeTime(mList.get(position).getLastMessage().localTime()));
+//        holder.timeView.setText(DateUtil.getRelativeTime(mList.get(position).getLastMessage().localTime()));
 
     }
 
