@@ -1,6 +1,8 @@
 package com.em.yzzdemo.conversation;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,7 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.em.yzzdemo.R;
-import com.em.yzzdemo.utils.DateUtil;
+import com.em.yzzdemo.callback.OnItemClickListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
@@ -33,11 +35,17 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
     private List<EMConversation> mList;
     private LayoutInflater mInflater;
     private String content;
+    // 刷新会话列表
+    private final int HANDLER_CONVERSATION_REFRESH = 0;
+    private MyHandler mHandler;
+    //自定义item点击接口
+    private OnItemClickListener mOnItemClickListener;
 
     public ConversationAdapter(Context context, List<EMConversation> list) {
         mContext = context;
         mList = list;
         mInflater = LayoutInflater.from(context);
+        mHandler = new MyHandler();
     }
 
     @Override
@@ -46,7 +54,7 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
     }
 
     @Override
-    public void onBindViewHolder(ConversationHolder holder, int position) {
+    public void onBindViewHolder(final ConversationHolder holder, int position) {
         EMGroup group = EMClient.getInstance().groupManager().getGroup(mList.get(position).conversationId());
         if(mList.get(position).isGroup() && group != null){
             holder.usernameView.setText(group.getGroupName());
@@ -79,6 +87,24 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         holder.messageView.setText(content);
 //        holder.timeView.setText(DateUtil.getRelativeTime(mList.get(position).getLastMessage().localTime()));
 
+        //item的点击事件
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int pos = holder.getLayoutPosition();
+                mOnItemClickListener.onItemClick(holder.itemView, pos);
+            }
+        });
+        //item的长按事件
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                int pos = holder.getLayoutPosition();
+                mOnItemClickListener.onItemLongClick(holder.itemView,pos);
+                return false;
+            }
+        });
+
     }
 
     @Override
@@ -101,5 +127,37 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
             messageView = (TextView) itemView.findViewById(R.id.last_message);
             timeView = (TextView) itemView.findViewById(R.id.conversation_time);
         }
+    }
+
+    public void setmOnItemClickListener(OnItemClickListener onItemClickListener){
+        this.mOnItemClickListener = onItemClickListener;
+    }
+
+    /**
+     * 自定义Handler，用来处理消息的刷新等
+     */
+    protected class MyHandler extends Handler {
+        private void refresh() {
+            notifyDataSetChanged();
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            //            super.handleMessage(msg);
+            switch (msg.what) {
+                case HANDLER_CONVERSATION_REFRESH:
+                    refresh();
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 供界面调用的刷新 Adapter 的方法
+     */
+    public void refreshList() {
+        Message msg = mHandler.obtainMessage();
+        msg.what = HANDLER_CONVERSATION_REFRESH;
+        mHandler.sendMessage(msg);
     }
 }

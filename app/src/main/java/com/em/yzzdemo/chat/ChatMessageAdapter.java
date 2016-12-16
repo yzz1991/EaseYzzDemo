@@ -34,11 +34,42 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     }
 
     /**
-     * 更新数据源
+     * 更新聊天数据
      */
-    public void refreshMessageData() {
-        mMessageList.clear();
-        mMessageList.addAll(mConversation.getAllMessages());
+    private void updateData() {
+        if (mMessageList != null) {
+            mMessageList.clear();
+            mMessageList.addAll(mConversation.getAllMessages());
+        } else {
+            mMessageList = mConversation.getAllMessages();
+        }
+    }
+
+    /**
+     * 刷新全部
+     */
+    public void refreshAll() {
+        updateData();
+        notifyDataSetChanged();
+    }
+
+    /**
+     * 有新消息来时的刷新方法
+     */
+    public void refreshInserted(int position) {
+        updateData();
+        notifyItemInserted(position);
+    }
+
+    /**
+     * 加载更多消息时的刷新方法
+     *
+     * @param position 数据添加位置
+     * @param count 数据添加数量
+     */
+    public void refreshInsertedMore(int position, int count) {
+        updateData();
+        notifyItemRangeInserted(position, count);
     }
 
     @Override

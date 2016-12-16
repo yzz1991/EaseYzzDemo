@@ -5,9 +5,14 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.util.Log;
 
+import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.chat.ChatActivity;
 import com.em.yzzdemo.event.ConnectionEvent;
+import com.em.yzzdemo.event.MessageEvent;
+import com.em.yzzdemo.event.UserEntityEvent;
 import com.em.yzzdemo.notification.Notifier;
+import com.em.yzzdemo.sql.ContactsDao;
+import com.em.yzzdemo.sql.ContactsHelper;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMConnectionListener;
@@ -110,7 +115,7 @@ public class MyHyphenate {
         // 设置是否需要服务器收到消息确认
         options.setRequireServerAck(true);
         // 收到好友申请是否自动同意，如果是自动同意就不会收到好友请求的回调，因为sdk会自动处理，默认为true
-        options.setAcceptInvitationAlways(false);
+        options.setAcceptInvitationAlways(true);
         // 设置是否自动接收加群邀请，如果设置了当收到群邀请会自动同意加入
         options.setAutoAcceptGroupInvitation(true);
         // 设置（主动或被动）退出群组时，是否删除群聊聊天记录
@@ -210,6 +215,13 @@ public class MyHyphenate {
                 if(cn.getClassName().equals(ChatActivity.class.getName())){
                     return;
                 }
+                for(EMMessage message : list){
+                    MessageEvent messageEvent = new MessageEvent();
+                    messageEvent.setMessage(message);
+                    messageEvent.setStatus(message.status());
+                    EventBus.getDefault().post(messageEvent);
+                }
+
                 if (list.size() > 1) {
                     // 收到多条新消息，发送一条消息集合的通知
                     Notifier.getInstance().sendNotificationMessageList(list);
@@ -251,7 +263,9 @@ public class MyHyphenate {
         mContactListener = new EMContactListener() {
             @Override
             public void onContactAdded(String s) {
-
+                UserEntity userEntity = new UserEntity(s);
+                ContactsDao.getInstance(mContext).saveUser(userEntity);
+                EventBus.getDefault().post(new UserEntityEvent());
             }
 
             @Override
@@ -340,8 +354,17 @@ public class MyHyphenate {
         EMClient.getInstance().groupManager().addGroupChangeListener(mGroupChangeListener);
     }
 
+    /**
+     * 重置app操作，主要是在退出登录时清除内存
+     */
+    private void resetApp() {
+        ContactsHelper.getInstance(mContext).resetDBHelper();
+        ContactsDao.getInstance(mContext).resetDatabase();
+    }
+
     //退出登录
     public void signOut(final EMCallBack callBack){
+        resetApp();
         EMClient.getInstance().logout(true, new EMCallBack() {
             @Override
             public void onSuccess() {

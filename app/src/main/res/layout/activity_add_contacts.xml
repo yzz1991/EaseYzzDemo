@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#eceff0">
+
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/addContacts_toolbarView"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/colorPrimary"/>
+    <EditText
+        android:id="@+id/addContacts_input"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginTop="175dp"
+        android:background="@drawable/sign_in_input_bg"
+        android:drawableLeft="@mipmap/search_dark"
+        android:paddingLeft="19.5dp"
+        android:paddingRight="11dp"
+        android:gravity="center_vertical"/>
+    <Button
+        android:id="@+id/addContacts_bt"
+        android:layout_width="88dp"
+        android:layout_height="36dp"
+        android:text="添加好友"
+        android:textColor="#ffffff"
+        android:textSize="14sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/add_contacts_selector"/>
+
+</LinearLayout>

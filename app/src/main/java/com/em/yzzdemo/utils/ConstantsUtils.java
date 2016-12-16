@@ -101,6 +101,10 @@ public class ConstantsUtils {
     public static final String CONNECTION_TYPE_USER_LOGIN_ANOTHER_DEVICE = "connection_type_user_login_another_device";
     public static final String CONNECTION_TYPE_NOT_USE = "connection_type_not_use";
 
+    /**
+     * 保存数据到 {@link android.content.SharedPreferences}的 key
+     */
+    public static final String ML_SHARED_USERNAME = "ml_username";
 
 
 }

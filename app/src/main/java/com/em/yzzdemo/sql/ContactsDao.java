@@ -23,7 +23,7 @@ public class ContactsDao {
 
     private ContactsDao(Context context){
         this.mContext = context;
-        db = new ContactsHelper(mContext).getReadableDatabase();
+        db = ContactsHelper.getInstance(context).getReadableDatabase();
     }
 
     public static ContactsDao getInstance(Context context){
@@ -62,5 +62,9 @@ public class ContactsDao {
             userMap.put(userEntity.getUserName(),userEntity);
         }
         return userMap;
+    }
+
+    public void resetDatabase(){
+        instance = null;
     }
 }

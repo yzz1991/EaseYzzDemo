@@ -2,7 +2,6 @@ package com.em.yzzdemo.contacts;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,8 +16,13 @@ import com.em.yzzdemo.R;
 import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.callback.OnItemClickListener;
 import com.em.yzzdemo.chat.ChatActivity;
+import com.em.yzzdemo.event.UserEntityEvent;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.chat.EMConversation;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +44,7 @@ public class ContactsFragment extends BaseFragment {
     SwipeRefreshLayout mRefreshView;
     private ContactsClickPopWindow addPopWindow;
     private ContactsAdapter mAdapter;
-    private List<UserEntity> mUserList;
+    private List<UserEntity> mUserList = new ArrayList<>();;
     private int currentPosition = 0;
 
     @Nullable
@@ -63,8 +67,7 @@ public class ContactsFragment extends BaseFragment {
     //初使化联系人列表
     private void initView() {
         mActivity = getActivity();
-        mUserList = new ArrayList<>();
-        mUserList.addAll(ContactsManager.getInstance(mActivity).getContactList().values());
+        loadContactsList();
         mAdapter = new ContactsAdapter(mActivity, mUserList);
         LinearLayoutManager manager = new LinearLayoutManager(mActivity);
         contactsView.setLayoutManager(manager);
@@ -97,25 +100,51 @@ public class ContactsFragment extends BaseFragment {
 
     }
 
+    /**
+     * 加载联系人列表
+     */
+    private void loadContactsList() {
+        if (mUserList == null) {
+            mUserList = new ArrayList<>();
+        }
+        mUserList.clear();
+        mUserList.addAll(ContactsManager.getInstance(mActivity).getContactList().values());
+    }
+
+    /**
+     * 刷新邀请信息界面
+     */
+    private void refresh() {
+        loadContactsList();
+        if (mAdapter == null) {
+            mAdapter = new ContactsAdapter(mActivity, mUserList);
+            contactsView.setAdapter(mAdapter);
+        } else {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void refreshData() {
         // 设置下拉刷新控件颜色
         mRefreshView.setColorSchemeResources(R.color.refresh_one, R.color.refresh_two,
                 R.color.refresh_three);
         mRefreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override public void run() {
-                        // 防止在下拉刷新的时候，当前界面关闭导致错误
-                        if (mActivity.isFinishing()) {
-                            return;
-                        }
-                        //加载数据
-
-                        mRefreshView.setRefreshing(false);
-                    }
-                }, 500);
+                // 防止在下拉刷新的时候，当前界面关闭导致错误
+                if (mActivity.isFinishing()) {
+                    return;
+                }
+                //加载数据
+                refresh();
+                mRefreshView.setRefreshing(false);
             }
         });
+    }
+
+
+
+    @Subscribe(threadMode = ThreadMode.MAIN) public void onEventBus(UserEntityEvent event){
+        refresh();
     }
 
     //为弹出窗口实现监听类
@@ -145,5 +174,21 @@ public class ContactsFragment extends BaseFragment {
 
     };
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        refresh();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
+    }
 }

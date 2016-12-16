@@ -16,6 +16,8 @@ import com.em.yzzdemo.R;
 import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.main.MainActivity;
 import com.em.yzzdemo.sql.ContactsDao;
+import com.em.yzzdemo.utils.ConstantsUtils;
+import com.em.yzzdemo.utils.SPUtil;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.exceptions.HyphenateException;
@@ -81,7 +83,7 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
         mDialog = new ProgressDialog(mActivity);
         mDialog.setMessage(getResources().getString(R.string.sign_in_dialog));
         mDialog.show();
-        String username = signInputUser.getText().toString().trim();
+        final String username = signInputUser.getText().toString().trim();
         String pwd = signInputPwd.getText().toString().trim();
         if(TextUtils.isEmpty(username) || TextUtils.isEmpty(pwd)){
             Toast.makeText(this, getResources().getString(R.string.sign_in_input_null), Toast.LENGTH_SHORT).show();
@@ -92,6 +94,8 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
         EMClient.getInstance().login(username, pwd, new EMCallBack() {
             @Override
             public void onSuccess() {
+                // 登录成功，把用户名保存在本地（可以不保存，根据自己的需求）
+                SPUtil.put(mActivity, ConstantsUtils.ML_SHARED_USERNAME, username);
                 //同步群组到本地
                 try {
                     EMClient.getInstance().groupManager().getJoinedGroupsFromServer();
@@ -105,7 +109,6 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
                 try {
                     List<String> userList = EMClient.getInstance().contactManager().getAllContactsFromServer();
                     UserEntity userEntity= null;
-
                     for(int i=0; i<userList.size();i++){
                         userEntity = new UserEntity(userList.get(i));
                         ContactsDao.getInstance(mActivity).saveUser(userEntity);

@@ -46,6 +46,7 @@ public class SettingFragment extends BaseFragment {
                     @Override
                     public void onSuccess() {
                         startActivity(new Intent(mActivity, SignInActivity.class));
+                        mActivity.finish();
                     }
 
                     @Override

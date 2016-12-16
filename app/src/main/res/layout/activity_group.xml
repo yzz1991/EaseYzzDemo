@@ -3,32 +3,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
     
-    <LinearLayout
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/group_toolbarView"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:orientation="horizontal"
-        android:background="?attr/colorPrimary"
-        android:gravity="center_vertical">
-        <TextView
-            android:id="@+id/group_back"
-            android:layout_width="@dimen/group_back_width"
-            android:layout_height="@dimen/group_back_height"
-            android:drawableLeft="@mipmap/arrow_back"
-            android:paddingLeft="@dimen/group_back_padding"/>
-        <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/contacts_group"
-            android:textColor="@color/sign_in_input_bg"
-            android:textSize="@dimen/contacts_user_font_16"/>
-        <ImageView
-            android:id="@+id/group_search"
-            android:layout_width="@dimen/group_back_width"
-            android:layout_height="@dimen/group_back_height"
-            android:src="@mipmap/search_light"
-            android:padding="@dimen/group_back_padding"/>
-    </LinearLayout>
+        android:background="?attr/colorPrimary"/>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/group_recyclerView"
         android:layout_width="match_parent"

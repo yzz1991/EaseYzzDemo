@@ -7,10 +7,13 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -61,6 +64,16 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     ImageView mVoiceView;
     @BindView(R.id.iv_send)
     ImageView mSendView;
+    @BindView(R.id.chat_refreshView)
+    SwipeRefreshLayout mRefreshView;
+
+    // 聊天界面消息刷新类型
+    private final int MSG_REFRESH_ALL = 0;
+    private final int MSG_REFRESH_INSERTED = 1;
+    private final int MSG_REFRESH_INSERTED_MORE = 2;
+    private final int MSG_REFRESH_REMOVED = 3;
+    private final int MSG_REFRESH_CHANGED = 4;
+
     private ChatMorePopWindow morePopWindow;
     private EMConversation.EMConversationType mConversationType;
     private EMConversation mConversation;
@@ -99,7 +112,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         //如果是群组设置群组名称，否则设置单聊名称
         if (mConversation.getType().equals(EMConversation.EMConversationType.GroupChat)) {
             group = EMClient.getInstance().groupManager().getGroup(id);
-            if(mConversation.isGroup() && group != null){
+            if (mConversation.isGroup() && group != null) {
                 //设置title
                 toolbar.setTitle(group.getGroupName());
             }
@@ -125,12 +138,46 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         //设置消息监听
         setMessageListener();
 
-        mAdapter = new ChatMessageAdapter(mActivity,id);
+        //设置下拉加载更多消息
+        refreshData();
+
+        mAdapter = new ChatMessageAdapter(mActivity, id);
         manager = new LinearLayoutManager(mActivity);
         recyclerView.setLayoutManager(manager);
         recyclerView.setAdapter(mAdapter);
         recyclerView.addOnScrollListener(new MLRecyclerViewListener());
         recyclerView.scrollToPosition(mConversation.getAllMessages().size() - 1);
+
+    }
+
+    //下拉加载更多消息
+    private void refreshData() {
+        //设置下拉控件的颜色
+        mRefreshView.setColorSchemeResources(R.color.refresh_one, R.color.refresh_two,
+                R.color.refresh_three);
+        mRefreshView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                // 防止在下拉刷新的时候，当前界面关闭导致错误
+                if (mActivity.isFinishing()) {
+                    return;
+                }
+                // 只有当前会话不为空时才可以下拉加载更多，否则会出现错误
+                if (mConversation.getAllMessages().size() > 0) {
+                    // 加载更多消息到当前会话的内存中
+                    List<EMMessage> messages = mConversation.loadMoreMsgFromDB(
+                            mConversation.getAllMessages().get(0).getMsgId(), 20);
+                    if (messages.size() > 0) {
+                        refreshInsertedMore(0, messages.size());
+                    } else {
+                        Toast.makeText(mActivity, "没有更多消息了", Toast.LENGTH_SHORT).show();
+
+                    }
+                }
+                // 取消刷新布局
+                mRefreshView.setRefreshing(false);
+            }
+        });
 
     }
 
@@ -143,9 +190,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
          * 监听 RecyclerView 滚动状态的变化
          *
          * @param recyclerView 当前监听的 RecyclerView 控件
-         * @param newState RecyclerView 变化的状态
+         * @param newState     RecyclerView 变化的状态
          */
-        @Override public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
             super.onScrollStateChanged(recyclerView, newState);
             // 当 RecyclerView 停止滚动后判断当前是否在底部
             if (newState == RecyclerView.SCROLL_STATE_IDLE) {
@@ -162,10 +210,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
          * RecyclerView 正在滚动中
          *
          * @param recyclerView 当前监听的 RecyclerView 控件
-         * @param dx 水平变化值，表示水平滚动，正表示向右，负表示向左
-         * @param dy 垂直变化值，表示上下滚动，正表示向下，负表示向上
+         * @param dx           水平变化值，表示水平滚动，正表示向右，负表示向左
+         * @param dy           垂直变化值，表示上下滚动，正表示向下，负表示向上
          */
-        @Override public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
             super.onScrolled(recyclerView, dx, dy);
             // 如果正在向上滚动，则也设置 isBottom 状态为false
             if (dy < 0) {
@@ -190,31 +239,30 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         @Override
         public void onTextChanged(CharSequence s, int start, int before, int count) {
             String text = mContextView.getText().toString().trim();
-            if(TextUtils.isEmpty(text)){
+            if (TextUtils.isEmpty(text)) {
                 mVoiceView.setVisibility(View.VISIBLE);
                 mSendView.setVisibility(View.GONE);
-            }else{
+            } else {
                 mVoiceView.setVisibility(View.GONE);
                 mSendView.setVisibility(View.VISIBLE);
             }
 
         }
     };
+
     //各种点击事件
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             //发送文本消息
             case R.id.iv_send:
                 String text = mContextView.getText().toString().trim();
-                if(TextUtils.isEmpty(text)){
+                if (TextUtils.isEmpty(text)) {
                     Toast.makeText(this, "输入内容为空", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 sendTextMessage(text);
                 mContextView.setText("");
-                mAdapter.refreshMessageData();
-                mAdapter.notifyDataSetChanged();
                 break;
             //发送语音消息
             case R.id.iv_voice:
@@ -265,11 +313,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                 case R.id.item_camera:
                     if (Build.VERSION.SDK_INT >= 23) {
                         int cameraPermission = ContextCompat.checkSelfPermission(mActivity, Manifest.permission.CAMERA);
-                        if(cameraPermission != PackageManager.PERMISSION_GRANTED){
-                            ActivityCompat.requestPermissions(mActivity,new String[]{Manifest.permission.CAMERA},
+                        if (cameraPermission != PackageManager.PERMISSION_GRANTED) {
+                            ActivityCompat.requestPermissions(mActivity, new String[]{Manifest.permission.CAMERA},
                                     ConstantsUtils.REQUEST_CODE_ASK_CAMERA);
                             return;
-                        }else{
+                        } else {
                             openCamera();
                         }
                     } else {
@@ -372,6 +420,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         });
         // 发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
+        // 刷新 UI 界面
+        refreshInserted(mConversation.getMessagePosition(message));
     }
 
     /**
@@ -392,6 +442,69 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         }
         // 根据 Intent 启动一个带有返回值的 Activity，这里启动的就是相机，返回选择图片的地址
         mActivity.startActivityForResult(intent, ConstantsUtils.REQUEST_CODE_CAMERA);
+    }
+
+    /**
+     * ----------------------------------- 聊天界面刷新 ------------------------------------------
+     * 刷新聊天界面 Handler
+     */
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            int what = msg.what;
+            int position = msg.arg1;
+            int count = msg.arg2;
+            switch (what) {
+                case MSG_REFRESH_ALL:
+                    mAdapter.refreshAll();
+                    break;
+                case MSG_REFRESH_INSERTED:
+                    mAdapter.refreshInserted(position);
+                    recyclerView.smoothScrollToPosition(position);
+                    break;
+                case MSG_REFRESH_INSERTED_MORE:
+                    mAdapter.refreshInsertedMore(position, count);
+                    recyclerView.smoothScrollToPosition(position);
+                    break;
+                case MSG_REFRESH_REMOVED:
+//                    mAdapter.refreshRemoved(position);
+                    break;
+                case MSG_REFRESH_CHANGED:
+//                    mAdapter.refreshChanged(position);
+                    break;
+            }
+        }
+    };
+
+    /**
+     * 刷新界面
+     */
+    private void refreshAll() {
+        handler.sendMessage(handler.obtainMessage(MSG_REFRESH_ALL));
+    }
+
+    /**
+     * 有新消息来时的刷新方法
+     *
+     * @param position 数据添加位置
+     */
+    private void refreshInserted(int position) {
+        Message msg = handler.obtainMessage(MSG_REFRESH_INSERTED);
+        msg.arg1 = position;
+        handler.sendMessage(msg);
+    }
+
+    /**
+     * 加载更多消息时的刷新方法
+     *
+     * @param position 数据添加位置
+     * @param count    数据添加数量
+     */
+    private void refreshInsertedMore(int position, int count) {
+        Message msg = handler.obtainMessage(MSG_REFRESH_INSERTED_MORE);
+        msg.arg1 = position;
+        msg.arg2 = count;
+        handler.sendMessage(msg);
     }
 
     /**
@@ -421,8 +534,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             case ConstantsUtils.REQUEST_CODE_CAMERA:
                 // 相机拍摄的图片
                 sendImageMessage(mCameraImageUri.getPath());
-                mAdapter.refreshMessageData();
-                mAdapter.notifyDataSetChanged();
                 break;
             case ConstantsUtils.REQUEST_CODE_GALLERY:
                 // 图库选择的图片，选择图片后返回获取返回的图片路径，然后发送图片
@@ -435,8 +546,6 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                     String image = c.getString(columnIndex);
                     c.close();
                     sendImageMessage(image);
-                    mAdapter.refreshMessageData();
-                    mAdapter.notifyDataSetChanged();
                 }
                 break;
 
@@ -478,7 +587,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
      *
      * @param intent 带有参数的intent
      */
-    @Override protected void onNewIntent(Intent intent) {
+    @Override
+    protected void onNewIntent(Intent intent) {
         String id = intent.getStringExtra(ConstantsUtils.CHAT_ID);
         // 判断 intent 携带的数据是否是当前聊天对象
         if (chatId.equals(id)) {
@@ -497,6 +607,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         super.onStart();
         EMClient.getInstance().chatManager().addMessageListener(mMessageListener);
     }
+
     /**
      * ---------------------------------------------------------------接收消息的监听----------------------------------------------------------------------
      */
@@ -517,15 +628,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                     if (chatId.equals(username)) {
                         // 设置消息为已读
                         mConversation.markMessageAsRead(message.getMsgId());
-                        mAdapter.refreshMessageData();
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                mAdapter.notifyDataSetChanged();
-                            }
-                        });
+                        // 刷新界面
+                        refreshInserted(mConversation.getMessagePosition(message));
 
-                    }else {
+                    } else {
                         // 不发送通知
                         isNotify = true;
                     }
@@ -535,6 +641,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                     Notifier.getInstance().sendNotificationMessageList(list);
                 }
             }
+
             @Override
             public void onCmdMessageReceived(List<EMMessage> list) {
 

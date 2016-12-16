@@ -15,6 +15,8 @@ import android.widget.Toast;
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.main.MainActivity;
+import com.em.yzzdemo.utils.ConstantsUtils;
+import com.em.yzzdemo.utils.SPUtil;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMError;
 import com.hyphenate.chat.EMClient;
@@ -84,6 +86,8 @@ public class SignUpActivity extends BaseActivity implements View.OnClickListener
                             if(!SignUpActivity.this.isFinishing()){
                                 mDialog.dismiss();
                             }
+                            // 注册成功，把用户名保存在本地（可以不保存，根据自己的需求）
+                            SPUtil.put(mActivity, ConstantsUtils.ML_SHARED_USERNAME, username);
                             Toast.makeText(mActivity, "注册成功", Toast.LENGTH_SHORT).show();
                             signIn(username,pwd);
                         }

@@ -49,6 +49,8 @@
         <activity android:name=".contacts.GroupActivity"/>
         <!--聊天页面-->
         <activity android:name=".chat.ChatActivity"/>
+        <!--添加好友页面-->
+        <activity android:name=".contacts.AddContactsActivity"/>
 
         <!-- 设置环信应用的AppKey -->
         <meta-data android:name="EASEMOB_APPKEY"

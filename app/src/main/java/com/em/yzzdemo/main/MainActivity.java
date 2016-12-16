@@ -1,5 +1,6 @@
 package com.em.yzzdemo.main;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -13,6 +14,7 @@ import android.widget.ImageView;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
+import com.em.yzzdemo.contacts.AddContactsActivity;
 import com.em.yzzdemo.contacts.ContactsFragment;
 import com.em.yzzdemo.conversation.ConversationFragment;
 import com.em.yzzdemo.setting.SettingFragment;
@@ -134,7 +136,7 @@ public class MainActivity extends BaseActivity {
 //                    startActivity(new Intent(MainActivity.this, PublicGroupsListActivity.class));
                     break;
                 case R.id.menu_add_contacts:
-//                    startActivity(new Intent(MainActivity.this, AddContactsActivity.class));
+                    startActivity(new Intent(mActivity, AddContactsActivity.class));
                     break;
             }
             return false;
