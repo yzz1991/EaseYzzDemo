@@ -10,6 +10,7 @@ public class ConstantsUtils {
     public static final String CHAT_ID = "chatId";
     //会话类型
     public static final String CHAT_TYPE = "chatType";
+    public static final String EXTRA_MSG_ID = "chat_msg_id";
 
     /**
      * 设置自己扩展的 key，包括会话对象{@link com.hyphenate.chat.EMConversation}扩展，
@@ -48,6 +49,21 @@ public class ConstantsUtils {
     // 输入状态
     public static final String ML_ATTR_INPUT_STATUS = "ml_attr_input_status";
 
+    // 申请与通知类型
+    public static final int APPLY_TYPE_USER = 0x00;      // 联系人申请
+    public static final int APPLY_TYPE_GROUP = 0x01;     // 群组申请
+
+    /**
+     * 自定义申请与通知列表项点击与长按的 Action
+     */
+    public static final int ACTION_APPLY_FOR_CLICK = 0X00;
+    public static final int ACTION_APPLY_FOR_AGREE = 0X10;
+    public static final int ACTION_APPLY_FOR_REFUSE = 0X11;
+    public static final int ACTION_APPLY_FOR_DELETE = 0X12;
+
+    // 定义好友申请与通知的 Conversation Id
+    public static final String CONVERSATION_APPLY = "conversation_apply";
+
     /**
      * 聊天消息类型
      * 首先是SDK支持的正常的消息类型，紧接着是扩展类型
@@ -69,12 +85,6 @@ public class ConstantsUtils {
     // 通话类型消息
     public static final int MSG_TYPE_CALL_SEND = 0x11;
     public static final int MSG_TYPE_CALL_RECEIVED = 0x12;
-    // 名片消息
-    public static final int MSG_TYPE_CARD_SEND = 0x13;
-    public static final int MSG_TYPE_CARD_RECEIVED = 0x14;
-    // 礼物消息
-    public static final int MSG_TYPE_GIFT_SEND = 0x15;
-    public static final int MSG_TYPE_GIFT_RECEIVED = 0x16;
 
 
     /**
@@ -87,6 +97,16 @@ public class ConstantsUtils {
     public static final int REQUEST_CODE_LOCATION = 0x05;
     public static final int REQUEST_CODE_GIFT = 0x06;
     public static final int REQUEST_CODE_CONTACTS = 0x07;
+
+    /**
+     * 自定义聊天界面消息列表项的点击与长按 Action
+     */
+    public static final int ACTION_MSG_CLICK = 0X00;
+    public static final int ACTION_MSG_RESEND = 0X01;
+    public static final int ACTION_MSG_COPY = 0X10;
+    public static final int ACTION_MSG_FORWARD = 0X11;
+    public static final int ACTION_MSG_DELETE = 0X12;
+    public static final int ACTION_MSG_RECALL = 0X13;
 
     /**
      * 动态获取权限请求码
@@ -105,6 +125,14 @@ public class ConstantsUtils {
      * 保存数据到 {@link android.content.SharedPreferences}的 key
      */
     public static final String ML_SHARED_USERNAME = "ml_username";
+
+    /**
+     * 自定义一些错误码，表示一些固定的错误
+     */
+    // 撤回消息错误码，超过时间限制
+    public static final int ERROR_I_RECALL_TIME = 5001;
+    // 撤回消息错误文字描述
+    public static final String ERROR_S_RECALL_TIME = "ml_max_time";
 
 
 }

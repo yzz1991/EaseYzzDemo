@@ -73,9 +73,15 @@ public class ConversationFragment extends BaseFragment {
         mConversationAdapter.setmOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(View view, int position) {
-                Intent intent = new Intent(mActivity, ChatActivity.class);
-                intent.putExtra(ConstantsUtils.CHAT_ID, list.get(position).getUserName());
-                intent.putExtra(ConstantsUtils.CHAT_TYPE, list.get(position).getType());
+                EMConversation conversation = list.get(position);
+                Intent intent = new Intent();
+                if(conversation.getUserName().equals(ConstantsUtils.CONVERSATION_APPLY)){
+                    intent.setClass(mActivity, ApplyForActivity.class);
+                }else{
+                    intent.setClass(mActivity, ChatActivity.class);
+                    intent.putExtra(ConstantsUtils.CHAT_ID, list.get(position).getUserName());
+                    intent.putExtra(ConstantsUtils.CHAT_TYPE, list.get(position).getType());
+                }
                 startActivity(intent);
             }
 

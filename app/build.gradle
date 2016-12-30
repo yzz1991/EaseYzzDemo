@@ -3,6 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 25
     buildToolsVersion '25.0.1'
+    useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "com.em.yzzdemo"
         minSdkVersion 15
@@ -18,28 +19,31 @@ android {
         }
     }
 
-    // 文件路径映射配置
-    sourceSets {
-        main {
-            // 设置Jni so文件路径 如果有jniLibs目录就不需要设置
-            jniLibs.srcDirs = ['libs']
-        }
-    }
+//    // 文件路径映射配置
+//    sourceSets {
+//        main {
+//            // 设置Jni so文件路径 如果有jniLibs目录就不需要设置
+//            jniLibs.srcDirs = ['libs']
+//        }
+//    }
         lintOptions {
             checkReleaseBuilds false
             // Or, if you prefer, you can continue to check for errors in release builds,
             // but continue the build even when errors are found:
             abortOnError false
         }
+
 }
+
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    //环信SDK
+    compile 'com.hyphenate:hyphenate-sdk:3.2.3'
     compile 'com.android.support:appcompat-v7:25.0.1'
-    compile files('libs/hyphenatechat_3.2.1.jar')
     // 引入 ButterKnife 库
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.jakewharton:butterknife:8.4.0'
@@ -47,4 +51,5 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.7.0'
     //引入eventbus库
     compile 'org.greenrobot:eventbus:3.0.0'
+
 }

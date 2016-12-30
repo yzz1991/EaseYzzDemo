@@ -134,6 +134,11 @@ public class ImageMessageItem extends MessageItem {
     }
 
     @Override
+    protected void onItemLongClick() {
+
+    }
+
+    @Override
     protected void onInflateView() {
         if(mViewType == ConstantsUtils.MSG_TYPE_IMAGE_SEND){
             mInflater.inflate(R.layout.item_msg_image_send,this);

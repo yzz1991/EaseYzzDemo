@@ -1,6 +1,7 @@
 package com.em.yzzdemo.chat;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -26,17 +27,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.notification.Notifier;
+import com.em.yzzdemo.test.TestActivity;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.em.yzzdemo.utils.DateUtil;
 import com.em.yzzdemo.utils.FileUtil;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMessage;
@@ -66,6 +70,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     ImageView mSendView;
     @BindView(R.id.chat_refreshView)
     SwipeRefreshLayout mRefreshView;
+    @BindView(R.id.voice_ll)
+    LinearLayout mVoiceLl;
 
     // 聊天界面消息刷新类型
     private final int MSG_REFRESH_ALL = 0;
@@ -91,6 +97,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private Uri mCameraImageUri = null;
     private File saveFile;
     private LinearLayoutManager manager;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -135,6 +142,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         //输入框的监听
         mContextView.addTextChangedListener(textWatcher);
         mSendView.setOnClickListener(this);
+        mVoiceView.setOnClickListener(this);
         //设置消息监听
         setMessageListener();
 
@@ -147,6 +155,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         recyclerView.setAdapter(mAdapter);
         recyclerView.addOnScrollListener(new MLRecyclerViewListener());
         recyclerView.scrollToPosition(mConversation.getAllMessages().size() - 1);
+
+        // 设置消息点击监听
+        setItemClickListener();
 
     }
 
@@ -179,6 +190,117 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             }
         });
 
+    }
+
+    /**
+     * RecyclerView的点击或长按事件
+     */
+    private void setItemClickListener() {
+        mAdapter.setOnItemClickListener(new ChatMessageAdapter.OnMessageItemClickListener() {
+            @Override
+            public void onItemAction(EMMessage message, int action) {
+                int position = mConversation.getAllMessages().indexOf(message);
+                switch (action){
+                    //点击
+                    case ConstantsUtils.ACTION_MSG_CLICK:
+                        itemClick(message);
+                        break;
+                    //重发
+                    case ConstantsUtils.ACTION_MSG_RESEND:
+
+                        break;
+                    //复制
+                    case ConstantsUtils.ACTION_MSG_COPY:
+
+                        break;
+                    //删除
+                    case ConstantsUtils.ACTION_MSG_DELETE:
+                        deleteMessage(position,message);
+                        break;
+                    //转发
+                    case ConstantsUtils.ACTION_MSG_FORWARD:
+
+                        break;
+                    //撤回
+                    case ConstantsUtils.ACTION_MSG_RECALL:
+                        recallMessage(message);
+                        break;
+                }
+            }
+        });
+    }
+
+    /**
+     * 消息点击事件，不同的消息有不同的触发
+     *
+     * @param message 点击的消息
+     */
+    private void itemClick(EMMessage message) {
+        if (message.getType() == EMMessage.Type.IMAGE) {
+            // 图片
+            Intent intent = new Intent();
+            intent.setClass(mActivity, BigImageActivity.class);
+            // 将被点击的消息ID传递过去
+            intent.putExtra(ConstantsUtils.EXTRA_MSG_ID, message.getMsgId());
+            mActivity.startActivity(intent);
+        }
+    }
+
+    /**
+     * 删除一条消息
+     *
+     * @param message 需要删除的消息
+     */
+    private void deleteMessage(int position, EMMessage message) {
+        // 删除消息，此方法会同时删除内存和数据库中的数据
+        mConversation.removeMessage(message.getMsgId());
+        // 弹出操作提示
+        Toast.makeText(mActivity,"删除成功",Toast.LENGTH_SHORT).show();
+        refreshRemoved(position);
+    }
+
+    /**
+     * 撤回消息，将已经发送成功的消息进行撤回
+     */
+    public void recallMessage(final EMMessage message){
+        //显示撤回消息的dialog
+        progressDialog = new ProgressDialog(mActivity);
+        progressDialog.setMessage("正在撤回，请稍等...");
+        progressDialog.show();
+        MessageUtils.sendRecallMessage(message, new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                // 关闭进度对话框
+                progressDialog.dismiss();
+                //设置扩展为撤回消息类型
+                message.setAttribute(ConstantsUtils.ML_ATTR_RECALL,true);
+                // 更新消息
+                EMClient.getInstance().chatManager().updateMessage(message);
+                // 撤回成功，刷新 UI
+                refreshChanged(mConversation.getMessagePosition(message));
+                Toast.makeText(mActivity,"撤回成功",Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(final int i, final String s) {
+                progressDialog.dismiss();
+                runOnUiThread(new Runnable() {
+                    @Override public void run() {
+                        // 弹出错误提示
+                        if (s.equals(ConstantsUtils.ERROR_S_RECALL_TIME)) {
+                            Toast.makeText(mActivity,"超时，不能撤回",Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(mActivity,"撤回失败",Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onProgress(int i, String s) {
+
+            }
+        });
     }
 
     /**
@@ -266,7 +388,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                 break;
             //发送语音消息
             case R.id.iv_voice:
-
+                startActivity(new Intent(mActivity,TestActivity.class));
                 break;
             //发送emoji表情
             case R.id.iv_emoji:
@@ -467,10 +589,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                     recyclerView.smoothScrollToPosition(position);
                     break;
                 case MSG_REFRESH_REMOVED:
-//                    mAdapter.refreshRemoved(position);
+                    mAdapter.refreshRemoved(position);
                     break;
                 case MSG_REFRESH_CHANGED:
-//                    mAdapter.refreshChanged(position);
+                    mAdapter.refreshChanged(position);
                     break;
             }
         }
@@ -478,6 +600,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
     /**
      * 刷新界面
+     * 清空会话的时候调用
      */
     private void refreshAll() {
         handler.sendMessage(handler.obtainMessage(MSG_REFRESH_ALL));
@@ -504,6 +627,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         Message msg = handler.obtainMessage(MSG_REFRESH_INSERTED_MORE);
         msg.arg1 = position;
         msg.arg2 = count;
+        handler.sendMessage(msg);
+    }
+
+    /**
+     * 删除消息时的刷新方法
+     *
+     * @param position 需要刷新的位置
+     */
+    private void refreshRemoved(int position) {
+        Message msg = handler.obtainMessage(MSG_REFRESH_REMOVED);
+        msg.arg1 = position;
+        handler.sendMessage(msg);
+    }
+
+    /**
+     * 消息改变时刷新方法
+     *
+     * @param position 数据改变的位置
+     */
+    private void refreshChanged(int position) {
+        Message msg = handler.obtainMessage(MSG_REFRESH_CHANGED);
+        msg.arg1 = position;
         handler.sendMessage(msg);
     }
 
@@ -644,7 +789,22 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> list) {
-
+                for (int i = 0; i < list.size(); i++) {
+                    // 透传消息
+                    EMMessage cmdMessage = list.get(i);
+                    EMCmdMessageBody body = (EMCmdMessageBody) cmdMessage.getBody();
+                    // 判断是不是撤回消息的透传
+                    if (body.action().equals(ConstantsUtils.ML_ATTR_RECALL)) {
+                        // 收到透传的CMD消息后，调用撤回消息方法进行处理
+                        boolean result = MessageUtils.receiveRecallMessage(cmdMessage);
+                        // 撤回消息之后，判断是否当前聊天界面，用来刷新界面
+                        if (id.equals(cmdMessage.getFrom()) && result) {
+                            String msgId = cmdMessage.getStringAttribute(ConstantsUtils.ML_ATTR_MSG_ID, null);
+                            int position = mConversation.getMessagePosition(mConversation.getMessage(msgId, true));
+                            refreshChanged(position);
+                        }
+                    }
+                }
             }
 
             @Override

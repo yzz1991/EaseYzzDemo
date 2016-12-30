@@ -2,6 +2,7 @@ package com.em.yzzdemo.chat.messageitem;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -9,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.em.yzzdemo.chat.ChatMessageAdapter;
+import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.chat.EMMessage;
 
 /**
@@ -38,6 +40,9 @@ public abstract class MessageItem extends LinearLayout {
     protected TextView contentView;
     //显示图片内容
     protected ImageView imageContextView;
+    // 弹出框
+    protected AlertDialog.Builder alertDialogBuilder;
+    protected AlertDialog alertDialog;
 
     public MessageItem(Context context, ChatMessageAdapter adapter, int viewType) {
         super(context);
@@ -47,7 +52,33 @@ public abstract class MessageItem extends LinearLayout {
         mViewType = viewType;
         mInflater = LayoutInflater.from(context);
         onInflateView();
+        onBubbleListener();
     }
+
+    protected void onBubbleListener(){
+        if(bubbleLayout != null){
+            //item点击
+            bubbleLayout.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_CLICK);
+                }
+            });
+            //item长按
+            bubbleLayout.setOnLongClickListener(new OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    onItemLongClick();
+                    return false;
+                }
+            });
+        }
+    }
+
+    /**
+     * 因为每个item点击效果不同，所有需要在子类中重写
+     */
+    protected abstract void onItemLongClick();
 
     /**
      * 填充当前 Item，子类必须实现
@@ -61,4 +92,20 @@ public abstract class MessageItem extends LinearLayout {
      * @param message 需要展示的 EMMessage 对象
      */
     public abstract void onSetupView(EMMessage message);
+
+    @Override
+    protected void onAttachedToWindow() {
+        //        MLLog.i("onAttachedToWindow %s", mMessage.getMsgId());
+        super.onAttachedToWindow();
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+        //        MLLog.i("onDetachedFromWindow %s", mMessage.getMsgId());
+        // 检查是否有弹出框，如果有则销毁，防止界面销毁时出现异常
+        if (alertDialog != null && alertDialog.isShowing()) {
+            alertDialog.dismiss();
+        }
+        super.onDetachedFromWindow();
+    }
 }

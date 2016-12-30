@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.em.yzzdemo.chat.messageitem.FileMessageItem;
 import com.em.yzzdemo.chat.messageitem.ImageMessageItem;
 import com.em.yzzdemo.chat.messageitem.MessageItem;
+import com.em.yzzdemo.chat.messageitem.RecallMessageItem;
 import com.em.yzzdemo.chat.messageitem.TextMessageItem;
 import com.em.yzzdemo.chat.messageitem.VoiceMessageItem;
 import com.em.yzzdemo.utils.ConstantsUtils;
@@ -26,6 +27,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     private EMConversation mConversation;
     private List<EMMessage> mMessageList;
     private String chatId;
+    private OnMessageItemClickListener mOnItemClickListener;
     public ChatMessageAdapter(Context context, String id) {
         mContext = context;
         chatId = id;
@@ -70,6 +72,26 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public void refreshInsertedMore(int position, int count) {
         updateData();
         notifyItemRangeInserted(position, count);
+    }
+
+    /**
+     * 删除消息时的刷新方法
+     *
+     * @param position 需要刷新的位置
+     */
+    public void refreshRemoved(int position) {
+        updateData();
+        notifyItemRemoved(position);
+    }
+
+    /**
+     * 消息改变时刷新方法
+     *
+     * @param position 数据改变的位置
+     */
+    public void refreshChanged(int position) {
+        updateData();
+        notifyItemChanged(position);
     }
 
     @Override
@@ -160,7 +182,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
              */
             //撤回消息类型
             case ConstantsUtils.MSG_TYPE_SYS_RECALL:
-
+                holder = new ChatMessageViewHolder(new RecallMessageItem(mContext,this,viewType));
                 break;
             //音视频消息类型
             case ConstantsUtils.MSG_TYPE_CALL_SEND:
@@ -194,6 +216,34 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
         public ChatMessageViewHolder(View itemView) {
             super(itemView);
         }
+    }
+
+    /**
+     * 自定义回调接口，用来实现 RecyclerView 中 Item 长按和点击事件监听
+     */
+    public interface OnMessageItemClickListener{
+        //不同item的点击与长按事件
+        public void onItemAction(EMMessage message, int action);
+    }
+
+    /**
+     * Item 项的点击和长按 Action 事件回调
+     *
+     * @param message 操作的 Item 的 EMMessage 对象
+     * @param action 需要处理的动作，比如 复制、转发、删除、撤回等
+     */
+    public void onItemAction(EMMessage message, int action){
+        mOnItemClickListener.onItemAction(message,action);
+
+    }
+
+    /**
+     * 设置回调监听
+     *
+     * @param onItemClickListener 自定义回调接口
+     */
+    public void setOnItemClickListener(OnMessageItemClickListener onItemClickListener){
+        this.mOnItemClickListener = onItemClickListener;
     }
 
 }

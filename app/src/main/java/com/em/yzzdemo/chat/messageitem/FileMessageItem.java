@@ -14,6 +14,11 @@ public class FileMessageItem extends MessageItem {
     }
 
     @Override
+    protected void onItemLongClick() {
+
+    }
+
+    @Override
     protected void onInflateView() {
 
     }

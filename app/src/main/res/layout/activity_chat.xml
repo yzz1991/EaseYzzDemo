@@ -58,5 +58,19 @@
             android:padding="16dp"
             android:visibility="gone"/>
     </LinearLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1.5dp"
+        android:background="#f2f2f2"/>
+    <LinearLayout
+        android:id="@+id/voice_ll"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="#ffffff"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone">
+
+    </LinearLayout>
 
 </LinearLayout>

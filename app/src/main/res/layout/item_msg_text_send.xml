@@ -27,8 +27,9 @@
             <LinearLayout
                 android:id="@+id/layout_bubble"
                 android:layout_width="wrap_content"
-                android:layout_height="36dp"
+                android:layout_height="wrap_content"
                 android:minWidth="68.5dp"
+                android:minHeight="36dp"
                 android:background="@drawable/bubble_msg_send"
                 android:gravity="right"
                 android:orientation="vertical"
@@ -37,12 +38,14 @@
                 android:paddingRight="8dp"
                 android:paddingTop="8dp">
                 <!--消息内容-->
+                <!--设置链接的颜色：android:textColorLink="#ff0000"-->
                 <TextView
                     android:id="@+id/text_content"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:maxWidth="256dp"
+                    android:autoLink="all|web|phone"
                     android:text="Demo"
                     android:textColor="#ffffff"
                     android:textSize="14sp" />

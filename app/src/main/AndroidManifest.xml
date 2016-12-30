@@ -5,7 +5,6 @@
     <!-- Required -->
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -15,7 +14,6 @@
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <!-- 录音 -->
@@ -51,6 +49,12 @@
         <activity android:name=".chat.ChatActivity"/>
         <!--添加好友页面-->
         <activity android:name=".contacts.AddContactsActivity"/>
+        <!--测试页面-->
+        <activity android:name=".test.TestActivity"/>
+        <!--显示大图-->
+        <activity android:name=".chat.BigImageActivity"/>
+        <!--申请与通知页面-->
+        <activity android:name=".conversation.ApplyForActivity"/>
 
         <!-- 设置环信应用的AppKey -->
         <meta-data android:name="EASEMOB_APPKEY"

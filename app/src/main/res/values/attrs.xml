@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="CustomTitleView">
+        <attr name="titleText" format="string"  />
+        <attr name="titleTextColor" format="color"/>
+        <attr name="titleTextSize" format="dimension" />
+        <!--录音按钮宽度-->
+        <attr name="record_waveform_width" format="dimension"/>
+        <!--外圆宽度-->
+        <attr name="outer_width" format="dimension"/>
+        <attr name="timeText" format="string"/>
+        <attr name="timeTextColor" format="color"/>
+        <attr name="timeTextSize" format="dimension" />
+    </declare-styleable>
+</resources>

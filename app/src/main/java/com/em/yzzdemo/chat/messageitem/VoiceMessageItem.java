@@ -14,6 +14,11 @@ public class VoiceMessageItem extends MessageItem {
     }
 
     @Override
+    protected void onItemLongClick() {
+
+    }
+
+    @Override
     public void onSetupView(EMMessage message) {
 
     }

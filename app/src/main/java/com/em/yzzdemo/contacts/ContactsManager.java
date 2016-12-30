@@ -36,6 +36,9 @@ public class ContactsManager {
         return mUserMap;
     }
 
+    public void resetUserMap(){
+        mUserMap.clear();
+    }
 
 
 }

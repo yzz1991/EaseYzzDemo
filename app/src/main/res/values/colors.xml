@@ -19,4 +19,11 @@
     <color name="refresh_one">#3e5c78</color>
     <color name="refresh_two">#00ba6e</color>
     <color name="refresh_three">#e62f17</color>
+
+    <color name="ml_black_38">#61212121</color>
+
+    <color name="transparent">#00000000</color>
+    <color name="gray_38">#61727272</color>
+    <color name="black_54">#89212121</color>
+    <color name="black_87">#dd212121</color>
 </resources>

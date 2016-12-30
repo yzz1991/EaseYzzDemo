@@ -7,6 +7,9 @@ import android.util.Log;
 
 import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.chat.ChatActivity;
+import com.em.yzzdemo.chat.MessageUtils;
+import com.em.yzzdemo.contacts.ContactsManager;
+import com.em.yzzdemo.event.ApplyForEvent;
 import com.em.yzzdemo.event.ConnectionEvent;
 import com.em.yzzdemo.event.MessageEvent;
 import com.em.yzzdemo.event.UserEntityEvent;
@@ -21,8 +24,10 @@ import com.hyphenate.EMError;
 import com.hyphenate.EMGroupChangeListener;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
+import com.hyphenate.chat.EMTextMessageBody;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -88,6 +93,9 @@ public class MyHyphenate {
         // 调用初始化方法初始化sdk
         EMClient.getInstance().init(mContext, initOptions());
 
+        // 设置开启debug模式
+        EMClient.getInstance().setDebugMode(true);
+
         // 初始化全局监听
         initGlobalListener();
 
@@ -115,7 +123,7 @@ public class MyHyphenate {
         // 设置是否需要服务器收到消息确认
         options.setRequireServerAck(true);
         // 收到好友申请是否自动同意，如果是自动同意就不会收到好友请求的回调，因为sdk会自动处理，默认为true
-        options.setAcceptInvitationAlways(true);
+        options.setAcceptInvitationAlways(false);
         // 设置是否自动接收加群邀请，如果设置了当收到群邀请会自动同意加入
         options.setAutoAcceptGroupInvitation(true);
         // 设置（主动或被动）退出群组时，是否删除群聊聊天记录
@@ -233,7 +241,25 @@ public class MyHyphenate {
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> list) {
+                ActivityManager am = (ActivityManager) mContext.getSystemService(ACTIVITY_SERVICE);
+                ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
+                if(cn.getClassName().equals(ChatActivity.class.getName())){
+                    return;
+                }
+                for (EMMessage cmdMessage : list) {
+                    EMCmdMessageBody body = (EMCmdMessageBody) cmdMessage.getBody();
 
+                    // 使用 EventBus 发布消息，可以被订阅此类型消息的订阅者监听到
+                    MessageEvent event = new MessageEvent();
+                    event.setMessage(cmdMessage);
+                    event.setStatus(cmdMessage.status());
+                    EventBus.getDefault().post(event);
+
+                    // 判断是不是撤回消息的透传
+                    if (body.action().equals(ConstantsUtils.ML_ATTR_RECALL)) {
+                        MessageUtils.receiveRecallMessage(cmdMessage);
+                    }
+                }
             }
 
             @Override
@@ -261,6 +287,10 @@ public class MyHyphenate {
      */
     private void setContactListener() {
         mContactListener = new EMContactListener() {
+            /**
+             * 监听到好友被添加
+             * @param s  被添加的用户
+             */
             @Override
             public void onContactAdded(String s) {
                 UserEntity userEntity = new UserEntity(s);
@@ -268,24 +298,127 @@ public class MyHyphenate {
                 EventBus.getDefault().post(new UserEntityEvent());
             }
 
+            /**
+             * 监听到删除好友
+             * @param s  被删除的好友
+             */
             @Override
             public void onContactDeleted(String s) {
-//                Toast.makeText(mContext, "您被好友删除了", Toast.LENGTH_SHORT).show();
+                UserEntity userEntity = new UserEntity(s);
+                ContactsDao.getInstance(mContext).saveUser(userEntity);
+                EventBus.getDefault().post(new UserEntityEvent());
             }
-
+            /**
+             * 收到对方添加好友申请
+             *
+             * @param s 发送好友申请者 username
+             * @param s1 申请理由
+             */
             @Override
             public void onContactInvited(String s, String s1) {
-//                Toast.makeText(mContext, "收到好友请求", Toast.LENGTH_SHORT).show();
-            }
+                //根据申请人的username和当前时间组成msgId
+                String msgId = s + System.currentTimeMillis();
+                //创建一条消息用来保存申请信息
+                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+                //将理由保存为内容直接显示
+                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
+                message.addBody(body);
+                //被申请者
+                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
+                //申请原因
+                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,s1);
+                //申请与通知类型
+                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE, ConstantsUtils.APPLY_TYPE_USER);
+                //申请状态
+                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"");
+                //设置发送者
+                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
+                //设置消息id
+                message.setMsgId(msgId);
+                //将消息保存到本地和数据库
+                EMClient.getInstance().chatManager().saveMessage(message);
 
+                // 调用发送通知栏提醒方法，提醒用户查看申请通知
+//                Notifier.getInstance().sendNotificationMessage(message);
+
+                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
+                MessageEvent messageEvent = new MessageEvent();
+                messageEvent.setMessage(message);
+                EventBus.getDefault().post(messageEvent);
+
+            }
+            /**
+             * 对方同意了自己的好友申请
+             *
+             * @param s 对方的 username
+             */
             @Override
             public void onContactAgreed(String s) {
-//                Toast.makeText(mContext, "对方已经同意了您的好友请求", Toast.LENGTH_SHORT).show();
-            }
+                //根据申请人的username和当前时间组成msgId
+                String msgId = s + System.currentTimeMillis();
+                //创建一条消息用来保存申请信息
+                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+                //将理由保存为内容直接显示
+                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
+                message.addBody(body);
+                //被申请者
+                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
+                //设置理由
+                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,"对方已同意您的好友申请");
+                //申请与通知类型
+                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE,ConstantsUtils.APPLY_TYPE_USER);
+                //设置申请状态
+                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"已同意");
+                //设置发送者
+                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
+                //消息ID
+                message.setMsgId(msgId);
+                //将消息保存到本地和数据库
+                EMClient.getInstance().chatManager().sendMessage(message);
+                // 调用发送通知栏提醒方法，提醒用户查看申请通知
+                Notifier.getInstance().sendNotificationMessage(message);
 
+                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
+                ApplyForEvent event = new ApplyForEvent();
+                event.setMessage(message);
+                EventBus.getDefault().post(event);
+            }
+            /**
+             * 对方拒绝了自己的好友申请
+             *
+             * @param s 对方的 username
+             */
             @Override
             public void onContactRefused(String s) {
-//                Toast.makeText(mContext, "对方拒绝了您的好友请求", Toast.LENGTH_SHORT).show();
+                //根据申请人的username和当前时间组成msgId
+                String msgId = s + System.currentTimeMillis();
+                //创建一条消息用来保存申请信息
+                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
+                //将理由保存为内容直接显示
+                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
+                message.addBody(body);
+                //被申请者
+                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
+                //设置理由
+                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,"对方已拒绝您的好友申请");
+                //申请与通知类型
+                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE,ConstantsUtils.APPLY_TYPE_USER);
+                //设置申请状态
+                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"已拒绝");
+                //设置发送者
+                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
+                //消息ID
+                message.setMsgId(msgId);
+                //将消息保存到本地和数据库
+                EMClient.getInstance().chatManager().sendMessage(message);
+                // 调用发送通知栏提醒方法，提醒用户查看申请通知
+                Notifier.getInstance().sendNotificationMessage(message);
+
+                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
+                ApplyForEvent event = new ApplyForEvent();
+                event.setMessage(message);
+                EventBus.getDefault().post(event);
+
             }
         };
         EMClient.getInstance().contactManager().setContactListener(mContactListener);
@@ -358,8 +491,12 @@ public class MyHyphenate {
      * 重置app操作，主要是在退出登录时清除内存
      */
     private void resetApp() {
+        //数据库清空
         ContactsHelper.getInstance(mContext).resetDBHelper();
+        //Dao清空
         ContactsDao.getInstance(mContext).resetDatabase();
+        //map清空
+        ContactsManager.getInstance(mContext).resetUserMap();
     }
 
     //退出登录
