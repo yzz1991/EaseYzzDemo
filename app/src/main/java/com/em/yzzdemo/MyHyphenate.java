@@ -120,8 +120,6 @@ public class MyHyphenate {
         options.setRequireAck(true);
         // 设置是否需要发送回执
         options.setRequireDeliveryAck(true);
-        // 设置是否需要服务器收到消息确认
-        options.setRequireServerAck(true);
         // 收到好友申请是否自动同意，如果是自动同意就不会收到好友请求的回调，因为sdk会自动处理，默认为true
         options.setAcceptInvitationAlways(false);
         // 设置是否自动接收加群邀请，如果设置了当收到群邀请会自动同意加入
@@ -263,13 +261,13 @@ public class MyHyphenate {
             }
 
             @Override
-            public void onMessageReadAckReceived(List<EMMessage> list) {
+            public void onMessageRead(List<EMMessage> list) {
 
 
             }
 
             @Override
-            public void onMessageDeliveryAckReceived(List<EMMessage> list) {
+            public void onMessageDelivered(List<EMMessage> list) {
 
             }
 
@@ -353,7 +351,7 @@ public class MyHyphenate {
              * @param s 对方的 username
              */
             @Override
-            public void onContactAgreed(String s) {
+            public void onFriendRequestAccepted(String s) {
                 //根据申请人的username和当前时间组成msgId
                 String msgId = s + System.currentTimeMillis();
                 //创建一条消息用来保存申请信息
@@ -389,7 +387,7 @@ public class MyHyphenate {
              * @param s 对方的 username
              */
             @Override
-            public void onContactRefused(String s) {
+            public void onFriendRequestDeclined(String s) {
                 //根据申请人的username和当前时间组成msgId
                 String msgId = s + System.currentTimeMillis();
                 //创建一条消息用来保存申请信息
@@ -432,22 +430,22 @@ public class MyHyphenate {
             //收到加入群组的邀请
             @Override
             public void onInvitationReceived(String s, String s1, String s2, String s3) {
-
+                Log.i("group", "groupname: "+s1);
             }
             //收到加群申请
             @Override
-            public void onApplicationReceived(String s, String s1, String s2, String s3) {
+            public void onRequestToJoinReceived(String s, String s1, String s2, String s3) {
 
             }
             //加群申请被同意
             @Override
-            public void onApplicationAccept(String s, String s1, String s2) {
+            public void onRequestToJoinAccepted(String s, String s1, String s2) {
 
 
             }
             // 加群申请被拒绝
             @Override
-            public void onApplicationDeclined(String s, String s1, String s2, String s3) {
+            public void onRequestToJoinDeclined(String s, String s1, String s2, String s3) {
 
             }
             //群组邀请被接受

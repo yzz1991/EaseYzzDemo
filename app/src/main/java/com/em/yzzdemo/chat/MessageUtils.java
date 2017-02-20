@@ -34,7 +34,7 @@ public class MessageUtils {
             cmdMessage.setChatType(EMMessage.ChatType.GroupChat);
         }
         //设置消息的接收者
-        cmdMessage.setReceipt(message.getTo());
+        cmdMessage.setTo(message.getTo());
         //创建CMD消息体，并设置action为recall;
         String action = ConstantsUtils.ML_ATTR_RECALL;
         EMCmdMessageBody body = new EMCmdMessageBody(action);

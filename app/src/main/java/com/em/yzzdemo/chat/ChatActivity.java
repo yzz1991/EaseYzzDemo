@@ -115,7 +115,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         mConversationType = (EMConversation.EMConversationType) getIntent().getExtras().get(ConstantsUtils.CHAT_TYPE);
         mConversation = EMClient.getInstance().chatManager().getConversation(chatId, mConversationType, true);
         id = mConversation.conversationId();
-        userName = mConversation.getUserName();
+        userName = mConversation.conversationId();
         //如果是群组设置群组名称，否则设置单聊名称
         if (mConversation.getType().equals(EMConversation.EMConversationType.GroupChat)) {
             group = EMClient.getInstance().groupManager().getGroup(id);
@@ -277,7 +277,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                 // 更新消息
                 EMClient.getInstance().chatManager().updateMessage(message);
                 // 撤回成功，刷新 UI
-                refreshChanged(mConversation.getMessagePosition(message));
+                refreshChanged(mConversation.getAllMessages().indexOf(message));
                 Toast.makeText(mActivity,"撤回成功",Toast.LENGTH_SHORT).show();
             }
 
@@ -543,7 +543,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         // 发送消息
         EMClient.getInstance().chatManager().sendMessage(message);
         // 刷新 UI 界面
-        refreshInserted(mConversation.getMessagePosition(message));
+        refreshInserted(mConversation.getAllMessages().indexOf(message));
     }
 
     /**
@@ -774,7 +774,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                         // 设置消息为已读
                         mConversation.markMessageAsRead(message.getMsgId());
                         // 刷新界面
-                        refreshInserted(mConversation.getMessagePosition(message));
+                        refreshInserted(mConversation.getAllMessages().indexOf(message));
 
                     } else {
                         // 不发送通知
@@ -800,7 +800,7 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                         // 撤回消息之后，判断是否当前聊天界面，用来刷新界面
                         if (id.equals(cmdMessage.getFrom()) && result) {
                             String msgId = cmdMessage.getStringAttribute(ConstantsUtils.ML_ATTR_MSG_ID, null);
-                            int position = mConversation.getMessagePosition(mConversation.getMessage(msgId, true));
+                            int position = mConversation.getAllMessages().indexOf((mConversation.getMessage(msgId, true)));
                             refreshChanged(position);
                         }
                     }
@@ -808,12 +808,12 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
             }
 
             @Override
-            public void onMessageReadAckReceived(List<EMMessage> list) {
+            public void onMessageRead(List<EMMessage> list) {
 
             }
 
             @Override
-            public void onMessageDeliveryAckReceived(List<EMMessage> list) {
+            public void onMessageDelivered(List<EMMessage> list) {
 
             }
 

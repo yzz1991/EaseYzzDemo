@@ -59,7 +59,7 @@ public class ConversationAdapter extends RecyclerView.Adapter<ConversationAdapte
         if(mList.get(position).isGroup() && group != null){
             holder.usernameView.setText(group.getGroupName());
         }else{
-            holder.usernameView.setText(mList.get(position).getUserName());
+            holder.usernameView.setText(mList.get(position).conversationId());
         }
 
         if(mList.get(position).getAllMessages().size() > 0){
