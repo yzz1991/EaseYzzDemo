@@ -26,6 +26,7 @@ import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.chat.EMTextMessageBody;
 
@@ -88,7 +89,6 @@ public class MyHyphenate {
         if (isInit) {
             return isInit;
         }
-        mContext = context;
 
         // 调用初始化方法初始化sdk
         EMClient.getInstance().init(mContext, initOptions());
@@ -122,8 +122,8 @@ public class MyHyphenate {
         options.setRequireDeliveryAck(true);
         // 收到好友申请是否自动同意，如果是自动同意就不会收到好友请求的回调，因为sdk会自动处理，默认为true
         options.setAcceptInvitationAlways(false);
-        // 设置是否自动接收加群邀请，如果设置了当收到群邀请会自动同意加入
-        options.setAutoAcceptGroupInvitation(true);
+        // 设置是否自动接收加群邀请，如果设置了当收到群邀请会自动同意加入，ture是自动同意
+        options.setAutoAcceptGroupInvitation(false);
         // 设置（主动或被动）退出群组时，是否删除群聊聊天记录
         options.setDeleteMessagesAsExitGroup(false);
         // 设置是否允许聊天室的Owner 离开并删除聊天室的会话
@@ -190,6 +190,7 @@ public class MyHyphenate {
 
             @Override
             public void onDisconnected(int errorCode) {
+
                 ConnectionEvent connectionEvent = new ConnectionEvent();
                 if(errorCode == EMError.USER_REMOVED){
                     Log.i("MyHyphenate", "显示帐号已经被移除");
@@ -268,6 +269,11 @@ public class MyHyphenate {
 
             @Override
             public void onMessageDelivered(List<EMMessage> list) {
+
+            }
+
+            @Override
+            public void onMessageRecalled(List<EMMessage> list) {
 
             }
 
@@ -430,7 +436,7 @@ public class MyHyphenate {
             //收到加入群组的邀请
             @Override
             public void onInvitationReceived(String s, String s1, String s2, String s3) {
-                Log.i("group", "groupname: "+s1);
+                Log.i("group", "groupname: "+s1+"-----"+s2+"-----"+s3);
             }
             //收到加群申请
             @Override
@@ -465,9 +471,10 @@ public class MyHyphenate {
 
             }
 
+            //群组被解散
             @Override
             public void onGroupDestroyed(String s, String s1) {
-                //群组被解散
+
             }
 
             /**
@@ -480,6 +487,66 @@ public class MyHyphenate {
             @Override
             public void onAutoAcceptInvitationFromGroup(String s, String s1, String s2) {
                 //
+            }
+
+            //添加禁言
+            @Override
+            public void onMuteListAdded(String s, List<String> list, long l) {
+
+            }
+
+            //解除禁言
+            @Override
+            public void onMuteListRemoved(String s, List<String> list) {
+
+            }
+
+            //添加管理员
+            @Override
+            public void onAdminAdded(String s, String s1) {
+
+            }
+
+            //移除管理员
+            @Override
+            public void onAdminRemoved(String s, String s1) {
+
+            }
+
+            //群管理员改变
+            @Override
+            public void onOwnerChanged(String s, String s1, String s2) {
+
+            }
+
+            //成员加入
+            @Override
+            public void onMemberJoined(String s, String s1) {
+
+            }
+
+            //成员退出
+            @Override
+            public void onMemberExited(String s, String s1) {
+
+            }
+
+            //群公告改变
+            @Override
+            public void onAnnouncementChanged(String s, String s1) {
+
+            }
+
+            //增加共享文件
+            @Override
+            public void onSharedFileAdded(String s, EMMucSharedFile emMucSharedFile) {
+
+            }
+
+            //群共享文件删除
+            @Override
+            public void onSharedFileDeleted(String s, String s1) {
+
             }
         };
         EMClient.getInstance().groupManager().addGroupChangeListener(mGroupChangeListener);

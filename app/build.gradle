@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId "com.em.yzzdemo"
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion 22
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -40,13 +40,15 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.0.1'
     // 引入 ButterKnife 库
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.4.0'
     compile 'com.jakewharton:butterknife:8.4.0'
-    compile 'com.android.support:design:25.0.1'
+    //design里包含v4、v7、RecyclerView
+    compile 'com.android.support:design:25.3.0'
     compile 'com.github.bumptech.glide:glide:3.7.0'
     //引入eventbus库
     compile 'org.greenrobot:eventbus:3.0.0'
-    compile files('libs/hyphenatechat_3.2.3.jar')
+    compile files('libs/hyphenatechat_3.3.4.jar')
+    compile files('libs/HMSSdkBase_2.5.1.300.jar')
+    compile files('libs/HMSSdkPush_2.5.1.300.jar')
 }

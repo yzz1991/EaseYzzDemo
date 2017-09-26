@@ -12,5 +12,14 @@
         android:text="退出登录"
         android:textColor="@color/sign_in_input_bg"
         android:textSize="@dimen/sign_in_input_font_14"/>
+    <Button
+        android:id="@+id/bt_import_message"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/sign_in_bt_36"
+        android:background="@drawable/sign_in_button_bg"
+        android:layout_marginTop="10dp"
+        android:text="导入消息"
+        android:textColor="@color/sign_in_input_bg"
+        android:textSize="@dimen/sign_in_input_font_14"/>
 
 </LinearLayout>

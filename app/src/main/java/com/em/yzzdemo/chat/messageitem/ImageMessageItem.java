@@ -1,6 +1,7 @@
 package com.em.yzzdemo.chat.messageitem;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -88,10 +89,12 @@ public class ImageMessageItem extends MessageItem {
             // 接收方获取缩略图的路径
             originalPath = imgBody.getLocalUrl();
             thumbnailsPath = imgBody.thumbnailLocalPath();
+            Log.d("thumbnailsPath", "Receive"+thumbnailsPath);
         } else {
             // 发送方获取图片路径
             originalPath = imgBody.getLocalUrl();
             thumbnailsPath = getThumbImagePath(originalPath);
+            Log.d("thumbnailsPath", "send"+thumbnailsPath);
         }
         // 为图片显示控件设置tag，在设置图片显示的时候，先判断下当前的tag是否是当前item的，是则显示图片
         //        imageView.setTag(thumbnailsPath);
@@ -109,7 +112,7 @@ public class ImageMessageItem extends MessageItem {
         File thumbnailsFile = new File(thumbnailsPath);
         File originalFile = new File(originalPath);
         // 根据图片存在情况加载缩略图显示
-        if (originalFile.exists()) {
+        if (originalFile.exists() && originalFile.isFile()) {
             // 原图存在，直接通过原图加载缩略图
             Glide.with(mContext)
                     .load(originalFile)

@@ -11,6 +11,7 @@ import android.widget.Button;
 import com.em.yzzdemo.BaseFragment;
 import com.em.yzzdemo.MyHyphenate;
 import com.em.yzzdemo.R;
+import com.em.yzzdemo.chat.ImportMessageUtils;
 import com.em.yzzdemo.sign.SignInActivity;
 import com.hyphenate.EMCallBack;
 
@@ -24,6 +25,8 @@ import butterknife.ButterKnife;
 public class SettingFragment extends BaseFragment {
     @BindView(R.id.bt_logout)
     Button btLogout;
+    @BindView(R.id.bt_import_message)
+    Button btImportMessage;
 
     @Nullable
     @Override
@@ -59,6 +62,13 @@ public class SettingFragment extends BaseFragment {
 
                     }
                 });
+            }
+        });
+
+        btImportMessage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImportMessageUtils.importMessages();
             }
         });
     }

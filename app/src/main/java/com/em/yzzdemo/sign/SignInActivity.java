@@ -116,13 +116,22 @@ public class SignInActivity extends BaseActivity implements View.OnClickListener
                 } catch (HyphenateException e) {
                     e.printStackTrace();
                 }
+                mDialog.dismiss();
                 startActivity(new Intent(mActivity,MainActivity.class));
                 finish();
             }
 
             @Override
             public void onError(int i, String s) {
-                Toast.makeText(mActivity, "登录聊天服务器失败", Toast.LENGTH_SHORT).show();
+                mDialog.dismiss();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity, "登录聊天服务器失败", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+
             }
 
             @Override

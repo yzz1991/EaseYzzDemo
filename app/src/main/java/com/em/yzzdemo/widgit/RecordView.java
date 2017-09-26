@@ -132,11 +132,11 @@ public class RecordView extends View {
 //        mPaint.setColor(mTimeTextColor);
 //        canvas.drawText(mTiemText,getWidth() / 2 - mBound.width() / 2,getMeasuredHeight()/6-mBound.height(),mPaint);
         drawTimeText(canvas);
-        /**
-         * 绘制外圆
-         */
-        mPaint.setColor(mOuterColor);
-        canvas.drawCircle(getMeasuredWidth()/2,getMeasuredHeight()/2,mOuterWidth/2,mPaint);
+//        /**
+//         * 绘制外圆
+//         */
+//        mPaint.setColor(mOuterColor);
+//        canvas.drawCircle(getMeasuredWidth()/2,getMeasuredHeight()/2,mOuterWidth/2,mPaint);
         /**
          * 绘制录音按钮
          */

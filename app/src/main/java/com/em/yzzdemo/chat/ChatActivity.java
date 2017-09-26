@@ -27,16 +27,15 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.em.yzzdemo.BaseActivity;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.notification.Notifier;
-import com.em.yzzdemo.test.TestActivity;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.em.yzzdemo.utils.DateUtil;
 import com.em.yzzdemo.utils.FileUtil;
+import com.em.yzzdemo.widgit.RecordView;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMMessageListener;
 import com.hyphenate.chat.EMClient;
@@ -46,6 +45,7 @@ import com.hyphenate.chat.EMGroup;
 import com.hyphenate.chat.EMMessage;
 
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 
 import butterknife.BindView;
@@ -70,8 +70,8 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     ImageView mSendView;
     @BindView(R.id.chat_refreshView)
     SwipeRefreshLayout mRefreshView;
-    @BindView(R.id.voice_ll)
-    LinearLayout mVoiceLl;
+    @BindView(R.id.recordView)
+    RecordView mRecordView;
 
     // 聊天界面消息刷新类型
     private final int MSG_REFRESH_ALL = 0;
@@ -98,6 +98,9 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
     private File saveFile;
     private LinearLayoutManager manager;
     private ProgressDialog progressDialog;
+    List<EMMessage> msgLisg;
+    //录音控件显示的状态
+    private boolean isflag = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -143,6 +146,10 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         mContextView.addTextChangedListener(textWatcher);
         mSendView.setOnClickListener(this);
         mVoiceView.setOnClickListener(this);
+
+        if(!isflag){
+            mRecordView.setVisibility(View.GONE);
+        }
         //设置消息监听
         setMessageListener();
 
@@ -158,6 +165,28 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
         // 设置消息点击监听
         setItemClickListener();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                EMConversation conversation = EMClient.getInstance().chatManager().getConversation(id);
+//                msgLisg = conversation.searchMsgFromDB(System.currentTimeMillis()-2*24*60*60*1000, System.currentTimeMillis(), 20);
+
+//                msgLisg = conversation.searchMsgFromDB(System.currentTimeMillis(), 20, EMConversation.EMSearchDirection.UP);
+                msgLisg = conversation.searchMsgFromDB(EMMessage.Type.IMAGE , System.currentTimeMillis(), 20, null,
+                        EMConversation.EMSearchDirection.UP);
+//                msgLisg = conversation.searchMsgFromDB("f", System.currentTimeMillis(), 20, id, EMConversation.EMSearchDirection.UP);
+
+//                Log.d("msgList", System.currentTimeMillis()-2*24*60*60*1000+"-----"+System.currentTimeMillis());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity, msgLisg.size()+"", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
+        }).start();
+
 
     }
 
@@ -388,7 +417,15 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
                 break;
             //发送语音消息
             case R.id.iv_voice:
-                startActivity(new Intent(mActivity,TestActivity.class));
+//                startActivity(new Intent(mActivity,TestActivity.class));
+                if(isflag){
+                    mRecordView.setVisibility(View.VISIBLE);
+                    isflag = false;
+                }else{
+                    mRecordView.setVisibility(View.GONE);
+                    isflag = true;
+                }
+
                 break;
             //发送emoji表情
             case R.id.iv_emoji:
@@ -527,7 +564,13 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
         message.setMessageStatusCallback(new EMCallBack() {
             @Override
             public void onSuccess() {
-                Log.i("message", "发送成功");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(mActivity,"发送成功",Toast.LENGTH_SHORT).show();
+                    }
+                });
+//                Log.i("message", "发送成功");
             }
 
             @Override
@@ -814,6 +857,11 @@ public class ChatActivity extends BaseActivity implements View.OnClickListener {
 
             @Override
             public void onMessageDelivered(List<EMMessage> list) {
+
+            }
+
+            @Override
+            public void onMessageRecalled(List<EMMessage> list) {
 
             }
 

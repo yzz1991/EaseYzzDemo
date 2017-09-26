@@ -6,6 +6,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,6 +19,12 @@ import com.em.yzzdemo.contacts.AddContactsActivity;
 import com.em.yzzdemo.contacts.ContactsFragment;
 import com.em.yzzdemo.conversation.ConversationFragment;
 import com.em.yzzdemo.setting.SettingFragment;
+import com.hyphenate.EMCallBack;
+import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMGroup;
+import com.hyphenate.chat.EMGroupManager;
+import com.hyphenate.chat.EMGroupOptions;
+import com.hyphenate.exceptions.HyphenateException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -93,6 +100,44 @@ public class MainActivity extends BaseActivity {
 
             }
         });
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                EMGroupOptions option = new EMGroupOptions();
+                option.maxUsers = 200;
+                option.style = EMGroupManager.EMGroupStyle.EMGroupStylePrivateMemberCanInvite;
+                option.extField = "测试aaaaaaaaaa";
+                try {
+                    EMGroup group = EMClient.getInstance().groupManager().createGroup("测试", "dddd", new String[]{"yzz4"},
+                            "jiajiajia", option);
+                    String ext = group.getExtension();
+                    group.getGroupId();
+                    Log.d("groupExt", ext);
+                } catch (HyphenateException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        EMClient.getInstance().groupManager().asyncJoinGroup("17101883506689", new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                Log.d("JoinGroup", "onSuccess");
+            }
+
+            @Override
+            public void onError(int i, String s) {
+                Log.e("JoinGroup", i+s);
+            }
+
+            @Override
+            public void onProgress(int i, String s) {
+
+            }
+        });
+
+
 
     }
 
