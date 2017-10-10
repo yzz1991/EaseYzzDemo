@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.em.yzzdemo.callback.EaseChatRowVoicePlayClickListener;
 import com.em.yzzdemo.chat.ChatMessageAdapter;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.chat.EMMessage;
@@ -36,10 +37,14 @@ public abstract class MessageItem extends LinearLayout {
     protected TextView usernameView;
     // 显示时间
     protected TextView msgTimeView;
-    // 显示聊天内容、文件消息就显示文件名
+    // 显示文本内容、文件消息就显示文件名
     protected TextView contentView;
     //显示图片内容
     protected ImageView imageContextView;
+    //显示语音图片
+    protected ImageView voiceImage;
+    //显示语音长度
+    protected TextView voiceTime;
     // 弹出框
     protected AlertDialog.Builder alertDialogBuilder;
     protected AlertDialog alertDialog;
@@ -61,7 +66,11 @@ public abstract class MessageItem extends LinearLayout {
             bubbleLayout.setOnClickListener(new OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_CLICK);
+                    if(mMessage.getType() == EMMessage.Type.VOICE){
+                        new EaseChatRowVoicePlayClickListener(mMessage, voiceImage, mAdapter, mActivity).onClick(bubbleLayout);
+                    }else if(mMessage.getType() == EMMessage.Type.IMAGE){
+                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_CLICK);
+                    }
                 }
             });
             //item长按

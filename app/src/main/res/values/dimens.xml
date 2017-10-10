@@ -5,7 +5,7 @@
 
     //登录与注册
     <dimen name="sign_in_margin_57">57dp</dimen>
-    <dimen name="sign_in_input_ll_height">90dp</dimen>
+    <dimen name="sign_in_input_ll_height">122dp</dimen>
     <dimen name="sign_in_input_ll_margin_35">35dp</dimen>
     <dimen name="sign_in_input_height">40dp</dimen>
     <dimen name="sign_in_margin_25">25dp</dimen>

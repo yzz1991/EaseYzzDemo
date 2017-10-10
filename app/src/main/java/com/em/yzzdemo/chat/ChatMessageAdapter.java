@@ -5,10 +5,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.em.yzzdemo.chat.messageitem.FileMessageItem;
 import com.em.yzzdemo.chat.messageitem.ImageMessageItem;
 import com.em.yzzdemo.chat.messageitem.MessageItem;
-import com.em.yzzdemo.chat.messageitem.RecallMessageItem;
 import com.em.yzzdemo.chat.messageitem.TextMessageItem;
 import com.em.yzzdemo.chat.messageitem.VoiceMessageItem;
 import com.em.yzzdemo.utils.ConstantsUtils;
@@ -114,15 +112,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
     public int getItemViewType(int position) {
         EMMessage message = mMessageList.get(position);
         int itemType = -1;
-        // 判断消息类型
-        if (message.getBooleanAttribute(ConstantsUtils.ML_ATTR_RECALL, false)) {
-            // 撤回消息
-            itemType = ConstantsUtils.MSG_TYPE_SYS_RECALL;
-        } else if (message.getBooleanAttribute(ConstantsUtils.ML_ATTR_CALL_VIDEO, false)
-                || message.getBooleanAttribute(ConstantsUtils.ML_ATTR_CALL_VOICE, false)) {
-            // 音视频消息
-            itemType = message.direct() == EMMessage.Direct.SEND ? ConstantsUtils.MSG_TYPE_CALL_SEND : ConstantsUtils.MSG_TYPE_CALL_RECEIVED;
-        } else {
+
             switch (message.getType()) {
                 case TXT:
                     // 文本消息
@@ -131,10 +121,6 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                 case IMAGE:
                     // 语音消息
                     itemType = message.direct() == EMMessage.Direct.SEND ? ConstantsUtils.MSG_TYPE_IMAGE_SEND : ConstantsUtils.MSG_TYPE_IMAGE_RECEIVED;
-                    break;
-                case FILE:
-                    // 文件消息
-                    itemType = message.direct() == EMMessage.Direct.SEND ? ConstantsUtils.MSG_TYPE_FILE_SEND : ConstantsUtils.MSG_TYPE_FILE_RECEIVED;
                     break;
                 case VOICE:
                     // 语音消息
@@ -145,13 +131,13 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
                     itemType = message.direct() == EMMessage.Direct.SEND ? ConstantsUtils.MSG_TYPE_TEXT_SEND : ConstantsUtils.MSG_TYPE_TEXT_RECEIVED;
                     break;
             }
-        }
+
         return itemType;
     }
 
     @Override
     public ChatMessageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ChatMessageViewHolder holder = null;
+        ChatMessageViewHolder holder;
         switch (viewType){
             /**
              * sdk默认的消息类型
@@ -166,29 +152,15 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
             case ConstantsUtils.MSG_TYPE_IMAGE_RECEIVED:
                 holder = new ChatMessageViewHolder(new ImageMessageItem(mContext,this,viewType));
                 break;
-            //文件类型
-            case ConstantsUtils.MSG_TYPE_FILE_SEND:
-            case ConstantsUtils.MSG_TYPE_FILE_RECEIVED:
-                holder = new ChatMessageViewHolder(new FileMessageItem(mContext,this,viewType));
-                break;
             //语音类型
             case ConstantsUtils.MSG_TYPE_VOICE_SEND:
             case ConstantsUtils.MSG_TYPE_VOICE_RECEIVED:
                 holder = new ChatMessageViewHolder(new VoiceMessageItem(mContext,this,viewType));
                 break;
-
-            /**
-             * 自定义的消息类型
-             */
-            //撤回消息类型
-            case ConstantsUtils.MSG_TYPE_SYS_RECALL:
-                holder = new ChatMessageViewHolder(new RecallMessageItem(mContext,this,viewType));
+            default:
+                holder = new ChatMessageViewHolder(new TextMessageItem(mContext,this,viewType));
                 break;
-            //音视频消息类型
-            case ConstantsUtils.MSG_TYPE_CALL_SEND:
-            case ConstantsUtils.MSG_TYPE_CALL_RECEIVED:
 
-                break;
         }
         return holder;
     }
@@ -223,7 +195,7 @@ public class ChatMessageAdapter extends RecyclerView.Adapter<ChatMessageAdapter.
      */
     public interface OnMessageItemClickListener{
         //不同item的点击与长按事件
-        public void onItemAction(EMMessage message, int action);
+        void onItemAction(EMMessage message, int action);
     }
 
     /**

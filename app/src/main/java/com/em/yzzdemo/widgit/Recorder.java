@@ -117,7 +117,7 @@ public class Recorder {
         }
 
         // 释放之后重新初始化
-//        initVoiceRecorder();
+        initVoiceRecorder();
 
         // 设置输出文件路径
         mMediaRecorder.setOutputFile(recordFilePath);
@@ -128,6 +128,7 @@ public class Recorder {
             mMediaRecorder.start();
         } catch (IOException e) {
             e.printStackTrace();
+            isRecording = true;
             return ERROR_SYSTEM;
         }
         return ERROR_NONE;

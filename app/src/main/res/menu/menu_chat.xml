@@ -3,22 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".chat.ChatActivity">
-    <item android:id="@+id/action_call"
+    <item android:id="@+id/action_logout"
         android:title="call"
         android:orderInCategory="60"
-        android:icon="@mipmap/call"
+        android:icon="@mipmap/logout"
         app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/action_video"
-        android:title="video"
-        android:orderInCategory="80"
-        android:icon="@mipmap/videocam"
-        app:showAsAction="ifRoom" />
-
-    <item android:id="@+id/action_more"
-        android:title="more"
-        android:orderInCategory="100"
-        android:icon="@mipmap/cell_expand_more_down"
-        app:showAsAction="ifRoom"/>
-
 </menu>

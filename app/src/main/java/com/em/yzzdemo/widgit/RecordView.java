@@ -13,12 +13,14 @@ import android.view.View;
 import com.em.yzzdemo.MyApplication;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.utils.DateUtil;
+import com.em.yzzdemo.utils.FileUtil;
 
 /**
  * Created by Geri on 2016/12/20.
  */
 
 public class RecordView extends View {
+    private final String TAG = this.getClass().getSimpleName();
     private Paint mPaint;
     private Rect mBound;
     // 上下文对象
@@ -40,10 +42,9 @@ public class RecordView extends View {
      * 外圆的颜色、宽
      * 时间字体的大小、颜色、
      */
-    private int mOuterColor= 0x0f3e5c78;
+    private int mOuterColor = 0x0f3e5c78;
     private int mOuterWidth = MyApplication.getContext().getResources().getDimensionPixelSize(R.dimen.outer_width_100);
-    private String mTiemText;
-    private int mTimeTextColor = 0xff000000;
+    private int mTimeTextColor = 0xff00ba6e;
     private int mTimeTextSize = MyApplication.getContext().getResources().getDimensionPixelSize(R.dimen.record_font_16);
     /**
      * 内圈录音按钮的颜色、宽
@@ -64,13 +65,15 @@ public class RecordView extends View {
     // 录音控件回调接口
     protected MLRecordCallback mRecordCallback;
 
+    String path;
+
 
     public RecordView(Context context) {
         this(context, null);
     }
 
     public RecordView(Context context, AttributeSet attrs) {
-        this(context,attrs,0);
+        this(context, attrs, 0);
         mContext = context;
     }
 
@@ -81,21 +84,20 @@ public class RecordView extends View {
      * @param attrs
      * @param defStyle
      */
-    public RecordView(Context context, AttributeSet attrs, int defStyle){
-        super(context, attrs,defStyle);
+    public RecordView(Context context, AttributeSet attrs, int defStyle) {
+        super(context, attrs, defStyle);
         /**
          * 获得自定义的样式属性
          */
-        if(attrs != null){
+        if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.CustomTitleView);
-            mTiemText = a.getString(R.styleable.CustomTitleView_timeText);
-            mTimeTextColor = a.getColor(R.styleable.CustomTitleView_timeTextColor,mTimeTextColor);
-            mTimeTextSize = a.getDimensionPixelOffset(R.styleable.CustomTitleView_timeTextSize,mTimeTextSize);
+            mTimeTextColor = a.getColor(R.styleable.CustomTitleView_timeTextColor, mTimeTextColor);
+            mTimeTextSize = a.getDimensionPixelOffset(R.styleable.CustomTitleView_timeTextSize, mTimeTextSize);
             mTitleText = a.getString(R.styleable.CustomTitleView_titleText);
-            mTitleTextColor = a.getColor(R.styleable.CustomTitleView_titleTextColor,mTitleTextColor);
-            mTitleTextSize = a.getDimensionPixelOffset(R.styleable.CustomTitleView_titleTextSize,mTitleTextSize);
-            mRecordWidth = a.getDimensionPixelOffset(R.styleable.CustomTitleView_record_waveform_width,mRecordWidth);
-            mOuterWidth = a.getDimensionPixelOffset(R.styleable.CustomTitleView_outer_width,mOuterWidth);
+            mTitleTextColor = a.getColor(R.styleable.CustomTitleView_titleTextColor, mTitleTextColor);
+            mTitleTextSize = a.getDimensionPixelOffset(R.styleable.CustomTitleView_titleTextSize, mTitleTextSize);
+            mRecordWidth = a.getDimensionPixelOffset(R.styleable.CustomTitleView_record_waveform_width, mRecordWidth);
+            mOuterWidth = a.getDimensionPixelOffset(R.styleable.CustomTitleView_outer_width, mOuterWidth);
             a.recycle();
         }
 
@@ -108,7 +110,7 @@ public class RecordView extends View {
         mPaint.setAntiAlias(true);
         mPaint.setTextSize(mTitleTextSize);
         mBound = new Rect();
-        mPaint.getTextBounds(mTitleText,0,mTitleText.length(),mBound);
+        mPaint.getTextBounds(mTitleText, 0, mTitleText.length(), mBound);
     }
 
     @Override
@@ -119,13 +121,13 @@ public class RecordView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.e("draw","ddddddd");
+        Log.e("draw", "ddddddd");
         /**
          * 绘制背景
          */
         mPaint.setColor(mBackgroundColor);
         //绘制矩形
-        canvas.drawRect(0,0,getMeasuredWidth(),getMeasuredHeight(),mPaint);
+        canvas.drawRect(0, 0, getMeasuredWidth(), getMeasuredHeight(), mPaint);
         /**
          * 绘制背景里的时间文字
          */
@@ -142,7 +144,7 @@ public class RecordView extends View {
          */
         mPaint.setColor(mTouchColor);
         //绘制圆形
-        canvas.drawCircle(getMeasuredWidth()/2,getMeasuredHeight()/2,mRecordWidth/2,mPaint);
+        canvas.drawCircle(getMeasuredWidth() / 2, getMeasuredHeight() / 2, mRecordWidth / 2, mPaint);
         /**
          * 绘制文字
          */
@@ -156,47 +158,50 @@ public class RecordView extends View {
      * @param canvas
      */
     protected void drawTimeText(Canvas canvas) {
-            mPaint.setColor(mTimeTextColor);
-            mPaint.setStrokeWidth(1);
-            mPaint.setTextSize(mTimeTextSize);
-            String timeText = "";
-            int minute = recordTime / 1000 / 60;
-            if (minute < 10) {
-                timeText = "0" + minute;
-            } else {
-                timeText = "" + minute;
-            }
-            int seconds = recordTime / 1000 % 60;
-            if (seconds < 10) {
-                timeText = timeText + ":0" + seconds;
-            } else {
-                timeText = timeText + ":" + seconds;
-            }
-            int millisecond = recordTime % 1000 / 100;
-            timeText = timeText + "." + millisecond;
-            float textWidth = mPaint.measureText(timeText);
-            canvas.drawText(mTiemText,getWidth() / 2 - textWidth / 2,getMeasuredHeight()/6-mBound.height(),mPaint);
+        mPaint.setColor(mTimeTextColor);
+        mPaint.setStrokeWidth(1);
+        mPaint.setTextSize(mTimeTextSize);
+        String timeText = "";
+        int minute = recordTime / 1000 / 60;
+        if (minute < 10) {
+            timeText = "0" + minute;
+        } else {
+            timeText = "" + minute;
+        }
+        int seconds = recordTime / 1000 % 60;
+        if (seconds < 10) {
+            timeText = timeText + ":0" + seconds;
+        } else {
+            timeText = timeText + ":" + seconds;
+        }
+        int millisecond = recordTime % 1000 / 100;
+        timeText = timeText + "." + millisecond;
+        Log.e("timetext", timeText);
+        float textWidth = mPaint.measureText(timeText);
+        canvas.drawText(timeText, getWidth() / 2 - textWidth / 2, getMeasuredHeight() / 4 - mBound.height(), mPaint);
 //            canvas.drawText(timeText, viewHeight / 2 + textWidth / 2, viewHeight / 2 + textSize / 3, textPaint);
     }
 
-    public void startRecord(String path){
+    public void startRecord(String path) {
+        Log.d(TAG, "startRecord: ");
         // 调用录音机开始录制音频
         int recordError = Recorder.getInstance().startRecordVoice(path);
-        if(recordError == Recorder.ERROR_NONE){
+        if (recordError == Recorder.ERROR_NONE) {
             // 开始录音
+            mTitleText = "正在说话";
             // 初始化开始录制时间
             startTime = DateUtil.getCurrentMillisecond();
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while (Recorder.getInstance().isRecording()) {
+                        recordTime = getRecordTime();
                         // 睡眠 100 毫秒，
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        recordTime = getRecordTime();
                         // MLLog.i("麦克风监听声音分贝：%d", decibel);
                         postInvalidate();
                     }
@@ -208,6 +213,15 @@ public class RecordView extends View {
             if (mRecordCallback != null) {
                 // 媒体录音器准备失败，调用取消
                 Recorder.getInstance().cancelRecordVoice();
+                Recorder.getInstance().isRecording = false;
+                isDown = false;
+                mTimeTextColor = 0xff000000;
+                mTouchColor = 0xff00ba6e;
+                mBackgroundColor = 0xfff2f2f2;
+                mTitleTextColor = 0xffffffff;
+                mTitleText = "按下说话";
+                recordTime = 0;
+                postInvalidate();
                 mRecordCallback.onFailed(recordError);
             }
         } else {
@@ -218,63 +232,105 @@ public class RecordView extends View {
         }
     }
 
+    public void cancelRecordVoice() {
+        Log.d(TAG, "cancelRecordVoice: ");
+        //调用取消录制的方法
+        Recorder.getInstance().cancelRecordVoice();
+        isDown = false;
+        mTimeTextColor = 0xff000000;
+        mTouchColor = 0xff00ba6e;
+        mBackgroundColor = 0xfff2f2f2;
+        mTitleTextColor = 0xffffffff;
+        mTitleText = "按下说话";
+        recordTime = 0;
+        postInvalidate();
+        mRecordCallback.onCancel();
+    }
+
+    public void stopRecordVoice() {
+        Log.d(TAG, "stopRecordVoice: ");
+        int status = Recorder.getInstance().stopRecordVoice();
+        if (status == Recorder.ERROR_NONE) {
+            mRecordCallback.onSuccess(path, recordTime);
+        } else if (status == Recorder.ERROR_FAILED || status == Recorder.ERROR_SYSTEM) {
+            mRecordCallback.onFailed(status);
+        }
+        recordTime = 0;
+        mTimeTextColor = 0xff000000;
+        mTouchColor = 0xff00ba6e;
+        mBackgroundColor = 0xfff2f2f2;
+        mTitleTextColor = 0xffffffff;
+        mTitleText = "按下说话";
+        postInvalidate();
+    }
+
     /**
      * 获取录音持续时间
      *
      * @return
      */
-    private int getRecordTime() {return (int) (DateUtil.getCurrentMillisecond() - startTime);}
+    private int getRecordTime() {
+        return (int) (DateUtil.getCurrentMillisecond() - startTime);
+    }
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
         float x = event.getX();
         float y = event.getY();
-        switch (action){
+        switch (action) {
             //表示用户开始
             case MotionEvent.ACTION_DOWN:
-                if(x > getMeasuredWidth()/2-mRecordWidth/2 && x < getMeasuredWidth()/2+mRecordWidth/2 &&
-                        y > getMeasuredHeight()/2-mRecordWidth/2 && y < getMeasuredHeight()/2+mRecordWidth/2){
+                if (x > getMeasuredWidth() / 2 - mRecordWidth / 2 && x < getMeasuredWidth() / 2 + mRecordWidth / 2 &&
+                        y > getMeasuredHeight() / 2 - mRecordWidth / 2 && y < getMeasuredHeight() / 2 + mRecordWidth / 2) {
                     isDown = true;
                     mTimeTextColor = 0xffff0000;
                     mTouchColor = 0xffff0000;
-                    startRecord(null);
+                    path = FileUtil.getFilesFromSDCard() + DateUtil.getCurrentMillisecond() + ".amr";
+                    startRecord(path);
                     postInvalidate();
-                    Log.e("action1",event.getAction()+"");
+                    Log.e("action1", event.getAction() + "");
                 }
 
                 break;
 
             //表示用户在移动
             case MotionEvent.ACTION_MOVE:
-                if(isDown){
-                    if(x < getMeasuredWidth()/2-mRecordWidth/2 || x > getMeasuredWidth()/2+mRecordWidth/2 ||
-                            y < getMeasuredHeight()/2-mRecordWidth/2 || y > getMeasuredHeight()/2+mRecordWidth/2){
+                if (isDown) {
+                    if (x < getMeasuredWidth() / 2 - mRecordWidth / 2 || x > getMeasuredWidth() / 2 + mRecordWidth / 2 ||
+                            y < getMeasuredHeight() / 2 - mRecordWidth / 2 || y > getMeasuredHeight() / 2 + mRecordWidth / 2) {
                         mTimeTextColor = 0xffffffff;
                         mTouchColor = 0xffffffff;
                         mBackgroundColor = 0xffff0000;
                         mTitleTextColor = 0xffff0000;
+                        mTitleText = "松开取消";
                         postInvalidate();
-                        Log.e("action3",event.getAction()+"");
-                    }else{
+                        Log.e("action3", event.getAction() + "");
+                    } else {
                         mTimeTextColor = 0xffff0000;
                         mTouchColor = 0xffff0000;
                         mBackgroundColor = 0xfff2f2f2;
                         mTitleTextColor = 0xffffffff;
+                        mTitleText = "正在说话";
                         postInvalidate();
                     }
+
                 }
                 break;
 
             //表示用户抬起手指
             case MotionEvent.ACTION_UP:
                 isDown = false;
-                mTimeTextColor = 0xff000000;
-                mTouchColor = 0xff00ba6e;
-                mBackgroundColor = 0xfff2f2f2;
-                mTitleTextColor = 0xffffffff;
-                postInvalidate();
-                Log.e("action2",event.getAction()+"");
+                int status = Recorder.ERROR_NONE;
+                if (x < getMeasuredWidth() / 2 - mRecordWidth / 2 || x > getMeasuredWidth() / 2 + mRecordWidth / 2 ||
+                        y < getMeasuredHeight() / 2 - mRecordWidth / 2 || y > getMeasuredHeight() / 2 + mRecordWidth / 2) {
+                    cancelRecordVoice();
+                } else {
+                    stopRecordVoice();
+                }
+
+                Log.e("action2", event.getAction() + "");
+
                 break;
         }
         return true;

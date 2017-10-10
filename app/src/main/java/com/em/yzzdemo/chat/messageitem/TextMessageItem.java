@@ -54,46 +54,51 @@ public class TextMessageItem extends MessageItem  {
         // 设置消息时间
         msgTimeView.setText(DateUtil.getRelativeTime(message.getMsgTime()));
 
-        EMTextMessageBody body = (EMTextMessageBody) mMessage.getBody();
-        String messageStr = body.getMessage().toString();
-        contentView.setText(messageStr);
+        if(mMessage.getType() != EMMessage.Type.TXT){
+            contentView.setText("不支持此类型的消息，请知悉");
+        }else {
+            EMTextMessageBody body = (EMTextMessageBody) mMessage.getBody();
+            String messageStr = body.getMessage().toString();
+            contentView.setText(messageStr);
+        }
+
     }
 
     @Override
     protected void onItemLongClick() {
-        String[] menus = null;
-        // 这里要根据消息的类型去判断要弹出的菜单，是否是发送方，并且是发送成功才能撤回
-        if (mViewType == ConstantsUtils.MSG_TYPE_TEXT_RECEIVED) {
-            menus = new String[]{"复制","转发消息", "删除消息"};
-        } else {
-            menus = new String[]{"复制","转发消息", "删除消息", "撤回消息"};
-        }
-        //设置弹出item长按菜单，并设置菜单的每个点击监听
-        alertDialogBuilder = new AlertDialog.Builder(mActivity);
-        alertDialogBuilder.setItems(menus, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which){
-                    case 0:
-                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_COPY);
-                        break;
-
-                    case 1:
-                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_FORWARD);
-                        break;
-
-                    case 2:
-                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_DELETE);
-                        break;
-
-                    case 3:
-                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_RECALL);
-                        break;
-                }
-            }
-        });
-        alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
+//        String[] menus = null;
+//        // 这里要根据消息的类型去判断要弹出的菜单，是否是发送方，并且是发送成功才能撤回
+//        if (mViewType == ConstantsUtils.MSG_TYPE_TEXT_RECEIVED) {
+//            menus = new String[]{"复制","转发消息", "删除消息"};
+//        } else {
+//            menus = new String[]{"复制","转发消息", "删除消息", "撤回消息"};
+//        }
+//        //设置弹出item长按菜单，并设置菜单的每个点击监听
+//        alertDialogBuilder = new AlertDialog.Builder(mActivity);
+//        alertDialogBuilder.setItems(menus, new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                switch (which){
+//                    case 0:
+//                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_COPY);
+//                        break;
+//
+//                    case 1:
+//                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_FORWARD);
+//                        break;
+//
+//                    case 2:
+//                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_DELETE);
+//                        break;
+//
+//                    case 3:
+//                        mAdapter.onItemAction(mMessage, ConstantsUtils.ACTION_MSG_RECALL);
+//                        break;
+//                }
+//            }
+//        });
+//        alertDialog = alertDialogBuilder.create();
+//        alertDialog.show();
     }
 
     /**

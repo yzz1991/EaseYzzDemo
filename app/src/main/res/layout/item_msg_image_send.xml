@@ -57,7 +57,7 @@
         <ImageView
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:src="@mipmap/header2"
+            android:src="@mipmap/user_header"
             android:layout_marginLeft="18dp"
             android:layout_marginRight="10dp"
             android:layout_marginBottom="25dp"/>

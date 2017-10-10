@@ -10,7 +10,6 @@ import android.support.v7.app.NotificationCompat;
 import com.em.yzzdemo.MyApplication;
 import com.em.yzzdemo.R;
 import com.em.yzzdemo.chat.ChatActivity;
-import com.em.yzzdemo.main.MainActivity;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
@@ -126,7 +125,7 @@ public class Notifier {
 
         mBuilder.setContentTitle("EaseYzzDemo");
         // 设置通知栏点击意图（点击通知栏跳转到相应的页面）
-        Intent intent = new Intent(mContext, MainActivity.class);
+        Intent intent = new Intent(mContext, ChatActivity.class);
         PendingIntent pIntent = PendingIntent.getActivity(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         mBuilder.setContentIntent(pIntent);
         // 通知首次出现在通知栏，带上升动画效果的（这里是一闪而过的，带有上升动画）

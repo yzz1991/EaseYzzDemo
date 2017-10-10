@@ -1,7 +1,7 @@
 package com.em.yzzdemo.event;
 
 /**
- * Created by Geri on 2016/12/13.
+ * Created by geri on 2017/9/26.
  */
 
 public class ConnectionEvent {

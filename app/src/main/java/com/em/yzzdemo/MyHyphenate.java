@@ -5,17 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.util.Log;
 
-import com.em.yzzdemo.bean.UserEntity;
 import com.em.yzzdemo.chat.ChatActivity;
-import com.em.yzzdemo.chat.MessageUtils;
-import com.em.yzzdemo.contacts.ContactsManager;
-import com.em.yzzdemo.event.ApplyForEvent;
 import com.em.yzzdemo.event.ConnectionEvent;
 import com.em.yzzdemo.event.MessageEvent;
-import com.em.yzzdemo.event.UserEntityEvent;
 import com.em.yzzdemo.notification.Notifier;
-import com.em.yzzdemo.sql.ContactsDao;
-import com.em.yzzdemo.sql.ContactsHelper;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMConnectionListener;
@@ -28,7 +21,6 @@ import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMucSharedFile;
 import com.hyphenate.chat.EMOptions;
-import com.hyphenate.chat.EMTextMessageBody;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -170,10 +162,6 @@ public class MyHyphenate {
         setConnectionListener();
         //全局消息监听
         setMessageListener();
-        //全局联系人监听
-        setContactListener();
-        // 设置全局的群组变化监听
-        setGroupChangeListener();
     }
 
     /**
@@ -240,25 +228,7 @@ public class MyHyphenate {
 
             @Override
             public void onCmdMessageReceived(List<EMMessage> list) {
-                ActivityManager am = (ActivityManager) mContext.getSystemService(ACTIVITY_SERVICE);
-                ComponentName cn = am.getRunningTasks(1).get(0).topActivity;
-                if(cn.getClassName().equals(ChatActivity.class.getName())){
-                    return;
-                }
-                for (EMMessage cmdMessage : list) {
-                    EMCmdMessageBody body = (EMCmdMessageBody) cmdMessage.getBody();
 
-                    // 使用 EventBus 发布消息，可以被订阅此类型消息的订阅者监听到
-                    MessageEvent event = new MessageEvent();
-                    event.setMessage(cmdMessage);
-                    event.setStatus(cmdMessage.status());
-                    EventBus.getDefault().post(event);
-
-                    // 判断是不是撤回消息的透传
-                    if (body.action().equals(ConstantsUtils.ML_ATTR_RECALL)) {
-                        MessageUtils.receiveRecallMessage(cmdMessage);
-                    }
-                }
             }
 
             @Override
@@ -286,287 +256,8 @@ public class MyHyphenate {
         EMClient.getInstance().chatManager().addMessageListener(mMessageListener);
     }
 
-    /**
-     * ----------------------------------------------------------全局联系人监听----------------------------------------------------------------------
-     */
-    private void setContactListener() {
-        mContactListener = new EMContactListener() {
-            /**
-             * 监听到好友被添加
-             * @param s  被添加的用户
-             */
-            @Override
-            public void onContactAdded(String s) {
-                UserEntity userEntity = new UserEntity(s);
-                ContactsDao.getInstance(mContext).saveUser(userEntity);
-                EventBus.getDefault().post(new UserEntityEvent());
-            }
-
-            /**
-             * 监听到删除好友
-             * @param s  被删除的好友
-             */
-            @Override
-            public void onContactDeleted(String s) {
-                UserEntity userEntity = new UserEntity(s);
-                ContactsDao.getInstance(mContext).saveUser(userEntity);
-                EventBus.getDefault().post(new UserEntityEvent());
-            }
-            /**
-             * 收到对方添加好友申请
-             *
-             * @param s 发送好友申请者 username
-             * @param s1 申请理由
-             */
-            @Override
-            public void onContactInvited(String s, String s1) {
-                //根据申请人的username和当前时间组成msgId
-                String msgId = s + System.currentTimeMillis();
-                //创建一条消息用来保存申请信息
-                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
-                //将理由保存为内容直接显示
-                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
-                message.addBody(body);
-                //被申请者
-                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
-                //申请原因
-                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,s1);
-                //申请与通知类型
-                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE, ConstantsUtils.APPLY_TYPE_USER);
-                //申请状态
-                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"");
-                //设置发送者
-                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
-                //设置消息id
-                message.setMsgId(msgId);
-                //将消息保存到本地和数据库
-                EMClient.getInstance().chatManager().saveMessage(message);
-
-                // 调用发送通知栏提醒方法，提醒用户查看申请通知
-//                Notifier.getInstance().sendNotificationMessage(message);
-
-                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
-                MessageEvent messageEvent = new MessageEvent();
-                messageEvent.setMessage(message);
-                EventBus.getDefault().post(messageEvent);
-
-            }
-            /**
-             * 对方同意了自己的好友申请
-             *
-             * @param s 对方的 username
-             */
-            @Override
-            public void onFriendRequestAccepted(String s) {
-                //根据申请人的username和当前时间组成msgId
-                String msgId = s + System.currentTimeMillis();
-                //创建一条消息用来保存申请信息
-                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
-                //将理由保存为内容直接显示
-                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
-                message.addBody(body);
-                //被申请者
-                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
-                //设置理由
-                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,"对方已同意您的好友申请");
-                //申请与通知类型
-                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE,ConstantsUtils.APPLY_TYPE_USER);
-                //设置申请状态
-                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"已同意");
-                //设置发送者
-                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
-                //消息ID
-                message.setMsgId(msgId);
-                //将消息保存到本地和数据库
-                EMClient.getInstance().chatManager().sendMessage(message);
-                // 调用发送通知栏提醒方法，提醒用户查看申请通知
-                Notifier.getInstance().sendNotificationMessage(message);
-
-                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
-                ApplyForEvent event = new ApplyForEvent();
-                event.setMessage(message);
-                EventBus.getDefault().post(event);
-            }
-            /**
-             * 对方拒绝了自己的好友申请
-             *
-             * @param s 对方的 username
-             */
-            @Override
-            public void onFriendRequestDeclined(String s) {
-                //根据申请人的username和当前时间组成msgId
-                String msgId = s + System.currentTimeMillis();
-                //创建一条消息用来保存申请信息
-                EMMessage message = EMMessage.createSendMessage(EMMessage.Type.TXT);
-                //将理由保存为内容直接显示
-                EMTextMessageBody body = new EMTextMessageBody("您有新的申请与通知信息");
-                message.addBody(body);
-                //被申请者
-                message.setAttribute(ConstantsUtils.ML_ATTR_USERNAME,s);
-                //设置理由
-                message.setAttribute(ConstantsUtils.ML_ATTR_REASON,"对方已拒绝您的好友申请");
-                //申请与通知类型
-                message.setAttribute(ConstantsUtils.ML_ATTR_TYPE,ConstantsUtils.APPLY_TYPE_USER);
-                //设置申请状态
-                message.setAttribute(ConstantsUtils.ML_ATTR_STATUS,"已拒绝");
-                //设置发送者
-                message.setFrom(ConstantsUtils.CONVERSATION_APPLY);
-                //消息ID
-                message.setMsgId(msgId);
-                //将消息保存到本地和数据库
-                EMClient.getInstance().chatManager().sendMessage(message);
-                // 调用发送通知栏提醒方法，提醒用户查看申请通知
-                Notifier.getInstance().sendNotificationMessage(message);
-
-                // 使用 EventBus 发布消息，通知订阅者申请与通知信息有变化
-                ApplyForEvent event = new ApplyForEvent();
-                event.setMessage(message);
-                EventBus.getDefault().post(event);
-
-            }
-        };
-        EMClient.getInstance().contactManager().setContactListener(mContactListener);
-    }
-
-    /**
-     * ------------------------------------------------------------全局的群组变化监听--------------------------------------------------------------------------------
-     */
-    private void setGroupChangeListener() {
-        mGroupChangeListener = new EMGroupChangeListener() {
-            //收到加入群组的邀请
-            @Override
-            public void onInvitationReceived(String s, String s1, String s2, String s3) {
-                Log.i("group", "groupname: "+s1+"-----"+s2+"-----"+s3);
-            }
-            //收到加群申请
-            @Override
-            public void onRequestToJoinReceived(String s, String s1, String s2, String s3) {
-
-            }
-            //加群申请被同意
-            @Override
-            public void onRequestToJoinAccepted(String s, String s1, String s2) {
-
-
-            }
-            // 加群申请被拒绝
-            @Override
-            public void onRequestToJoinDeclined(String s, String s1, String s2, String s3) {
-
-            }
-            //群组邀请被接受
-            @Override
-            public void onInvitationAccepted(String s, String s1, String s2) {
-
-            }
-            //群组邀请被拒绝
-            @Override
-            public void onInvitationDeclined(String s, String s1, String s2) {
-
-            }
-
-            //当前用户被管理员移除出群组
-            @Override
-            public void onUserRemoved(String s, String s1) {
-
-            }
-
-            //群组被解散
-            @Override
-            public void onGroupDestroyed(String s, String s1) {
-
-            }
-
-            /**
-             * 自动同意加入群组 sdk会先加入这个群组，并通过此回调通知应用
-             *
-             * @param s 收到邀请加入的群组id
-             * @param s1 邀请者
-             * @param s2 邀请信息
-             */
-            @Override
-            public void onAutoAcceptInvitationFromGroup(String s, String s1, String s2) {
-                //
-            }
-
-            //添加禁言
-            @Override
-            public void onMuteListAdded(String s, List<String> list, long l) {
-
-            }
-
-            //解除禁言
-            @Override
-            public void onMuteListRemoved(String s, List<String> list) {
-
-            }
-
-            //添加管理员
-            @Override
-            public void onAdminAdded(String s, String s1) {
-
-            }
-
-            //移除管理员
-            @Override
-            public void onAdminRemoved(String s, String s1) {
-
-            }
-
-            //群管理员改变
-            @Override
-            public void onOwnerChanged(String s, String s1, String s2) {
-
-            }
-
-            //成员加入
-            @Override
-            public void onMemberJoined(String s, String s1) {
-
-            }
-
-            //成员退出
-            @Override
-            public void onMemberExited(String s, String s1) {
-
-            }
-
-            //群公告改变
-            @Override
-            public void onAnnouncementChanged(String s, String s1) {
-
-            }
-
-            //增加共享文件
-            @Override
-            public void onSharedFileAdded(String s, EMMucSharedFile emMucSharedFile) {
-
-            }
-
-            //群共享文件删除
-            @Override
-            public void onSharedFileDeleted(String s, String s1) {
-
-            }
-        };
-        EMClient.getInstance().groupManager().addGroupChangeListener(mGroupChangeListener);
-    }
-
-    /**
-     * 重置app操作，主要是在退出登录时清除内存
-     */
-    private void resetApp() {
-        //数据库清空
-        ContactsHelper.getInstance(mContext).resetDBHelper();
-        //Dao清空
-        ContactsDao.getInstance(mContext).resetDatabase();
-        //map清空
-        ContactsManager.getInstance(mContext).resetUserMap();
-    }
-
     //退出登录
     public void signOut(final EMCallBack callBack){
-        resetApp();
         EMClient.getInstance().logout(true, new EMCallBack() {
             @Override
             public void onSuccess() {
