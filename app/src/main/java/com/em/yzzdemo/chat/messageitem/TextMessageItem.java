@@ -30,6 +30,7 @@ public class TextMessageItem extends MessageItem  {
 
 
 
+
     /**
      * 实现数据的填充
      *

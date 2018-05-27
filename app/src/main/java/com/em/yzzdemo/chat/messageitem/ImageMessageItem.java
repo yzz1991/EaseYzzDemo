@@ -2,14 +2,12 @@ package com.em.yzzdemo.chat.messageitem;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
-import android.support.v4.os.AsyncTaskCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -20,7 +18,6 @@ import com.em.yzzdemo.utils.BitmapUtil;
 import com.em.yzzdemo.utils.ConstantsUtils;
 import com.em.yzzdemo.utils.CryptoUtil;
 import com.em.yzzdemo.utils.DateUtil;
-import com.em.yzzdemo.utils.ImageCache;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMFileMessageBody;
 import com.hyphenate.chat.EMImageMessageBody;
@@ -50,6 +47,8 @@ public class ImageMessageItem extends MessageItem {
     public ImageMessageItem(Context context, ChatMessageAdapter adapter, int viewType) {
         super(context, adapter, viewType);
     }
+
+
 
     @Override public void onSetupView(EMMessage message) {
         mMessage = message;
@@ -104,12 +103,15 @@ public class ImageMessageItem extends MessageItem {
         // 判断下是否是接收方的消息
         if (mViewType == ConstantsUtils.MSG_TYPE_IMAGE_RECEIVED) {
             // 接收方获取缩略图的路径
-            originalPath = imgBody.getLocalUrl();
+            String localPath = imgBody.getLocalUrl();
             thumbnailsPath = imgBody.thumbnailLocalPath();
             Log.i(TAG, "Receive Path thumb " + thumbnailsPath + ", local " + originalPath);
         } else {
             // 发送方获取图片路径
-            originalPath = imgBody.getLocalUrl();
+            String localPath = imgBody.getLocalUrl();
+            String fileName = imgBody.getFileName();
+            String imageName = fileName.substring(fileName.indexOf("_") + 1);
+            originalPath = localPath.substring(0, localPath.lastIndexOf("/") + 1) + imageName;
             thumbnailsPath = getThumbImagePath(originalPath);
             Log.i(TAG, "Send Path thumb " + thumbnailsPath + ", local " + originalPath);
         }
@@ -118,7 +120,44 @@ public class ImageMessageItem extends MessageItem {
 
         // 设置缩略图的显示
         showThumbnailsImage(thumbnailsPath, originalPath);
+        if(mMessage.direct() == EMMessage.Direct.SEND){
+            handleSendMessage();
+        }
+
     }
+
+    protected void handleSendMessage() {
+        setMessageSendCallback();
+        switch (mMessage.status()) {
+            case SUCCESS:
+                progressBar.setVisibility(View.INVISIBLE);
+                if(percentageView != null)
+                    percentageView.setVisibility(View.INVISIBLE);
+                statusView.setVisibility(View.INVISIBLE);
+                break;
+            case FAIL:
+                progressBar.setVisibility(View.INVISIBLE);
+                if(percentageView != null)
+                    percentageView.setVisibility(View.INVISIBLE);
+                statusView.setVisibility(View.VISIBLE);
+                break;
+            case INPROGRESS:
+                progressBar.setVisibility(View.VISIBLE);
+                if(percentageView != null){
+                    percentageView.setVisibility(View.VISIBLE);
+                    percentageView.setText(mMessage.progress() + "%");
+                }
+                statusView.setVisibility(View.INVISIBLE);
+                break;
+            default:
+                progressBar.setVisibility(View.INVISIBLE);
+                if(percentageView != null)
+                    percentageView.setVisibility(View.INVISIBLE);
+                statusView.setVisibility(View.VISIBLE);
+                break;
+        }
+    }
+
 
     /**
      * 设置缩略图的显示，并将缩略图添加到缓存
@@ -192,6 +231,9 @@ public class ImageMessageItem extends MessageItem {
     @Override protected void onInflateView() {
         if (mViewType == ConstantsUtils.MSG_TYPE_IMAGE_SEND) {
             mInflater.inflate(R.layout.item_msg_image_send, this);
+            progressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            percentageView = (TextView) findViewById(R.id.percentage);
+            statusView = (ImageView) findViewById(R.id.msg_status);
         } else {
             mInflater.inflate(R.layout.item_msg_image_received, this);
         }
@@ -199,6 +241,7 @@ public class ImageMessageItem extends MessageItem {
         usernameView = (TextView) findViewById(R.id.image_username);
         imageContextView = (ImageView) findViewById(R.id.image_content);
         msgTimeView = (TextView) findViewById(R.id.message_time);
+
     }
 
     /**

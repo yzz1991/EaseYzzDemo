@@ -7,12 +7,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.em.yzzdemo.callback.EaseChatRowVoicePlayClickListener;
 import com.em.yzzdemo.chat.ChatMessageAdapter;
 import com.em.yzzdemo.utils.ConstantsUtils;
+import com.hyphenate.EMCallBack;
+import com.hyphenate.chat.EMClient;
+import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
+
+import java.io.File;
 
 /**
  * Created by Geri on 2016/12/8.
@@ -41,6 +48,10 @@ public abstract class MessageItem extends LinearLayout {
     protected TextView contentView;
     //显示图片内容
     protected ImageView imageContextView;
+    //显示发送图片的进度
+    protected ProgressBar progressBar;
+    protected TextView percentageView;
+    protected ImageView statusView;
     //显示语音图片
     protected ImageView voiceImage;
     //显示语音长度
@@ -48,6 +59,7 @@ public abstract class MessageItem extends LinearLayout {
     // 弹出框
     protected AlertDialog.Builder alertDialogBuilder;
     protected AlertDialog alertDialog;
+    protected EMCallBack messageSendCallback;
 
     public MessageItem(Context context, ChatMessageAdapter adapter, int viewType) {
         super(context);
@@ -82,6 +94,61 @@ public abstract class MessageItem extends LinearLayout {
                 }
             });
         }
+    }
+
+    /**
+     * set callback for sending message
+     */
+    protected void setMessageSendCallback(){
+        if(messageSendCallback == null){
+            messageSendCallback = new EMCallBack() {
+
+                @Override
+                public void onSuccess() {
+                    if(mMessage.getType().equals(EMMessage.Type.IMAGE)){
+                        EMImageMessageBody body = (EMImageMessageBody) mMessage.getBody();
+                        String localUrl = body.getLocalUrl();
+                        String fileName = body.getFileName();
+                        File file = new File(localUrl);
+                        String imageName = fileName.substring(fileName.indexOf("_") + 1);
+                        String localPath = file.getParent() + "/" + imageName;
+                        file.delete();
+                        body.setLocalUrl(localPath);
+                        EMClient.getInstance().chatManager().updateMessage(mMessage);
+                    }
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+
+                @Override
+                public void onProgress(final int progress, String status) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            if(percentageView != null)
+                                percentageView.setText(progress + "%");
+
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(int code, String error) {
+                    mActivity.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mActivity, "消息发送失败", Toast.LENGTH_SHORT).show();
+                            mAdapter.notifyDataSetChanged();
+                        }
+                    });
+                }
+            };
+        }
+        mMessage.setMessageStatusCallback(messageSendCallback);
     }
 
     /**

@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Created by Administrator on 2015/3/26.
+ * Created by Geri on 2015/3/26.
  */
 public class CryptoUtil {
 

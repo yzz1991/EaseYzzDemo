@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
- * Created by Administrator on 2015/3/26.
+ * Created by Geri on 2015/3/26.
  */
 public class DateUtil {
 

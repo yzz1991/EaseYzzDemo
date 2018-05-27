@@ -26,14 +26,8 @@ public class ConstantsUtils {
     public static final int MSG_TYPE_TEXT_RECEIVED = 0x01;
     public static final int MSG_TYPE_IMAGE_SEND = 0x02;
     public static final int MSG_TYPE_IMAGE_RECEIVED = 0x03;
-    public static final int MSG_TYPE_LOCATION_SEND = 0x04;
-    public static final int MSG_TYPE_LOCATION_RECEIVED = 0x05;
-    public static final int MSG_TYPE_FILE_SEND = 0x04;
-    public static final int MSG_TYPE_FILE_RECEIVED = 0x05;
-    public static final int MSG_TYPE_VIDEO_SEND = 0x04;
-    public static final int MSG_TYPE_VIDEO_RECEIVED = 0x05;
-    public static final int MSG_TYPE_VOICE_SEND = 0x08;
-    public static final int MSG_TYPE_VOICE_RECEIVED = 0x09;
+    public static final int MSG_TYPE_VOICE_SEND = 0x04;
+    public static final int MSG_TYPE_VOICE_RECEIVED = 0x05;
 
 
 

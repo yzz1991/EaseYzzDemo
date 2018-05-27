@@ -16,6 +16,7 @@ import android.util.Log;
 
 import com.em.yzzdemo.MyApplication;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -25,7 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * Created by lzan13 on 2014/12/16.
+ * Created by Geri on 2014/12/16.
  * this is my file utils
  */
 public class FileUtil {
@@ -161,6 +162,26 @@ public class FileUtil {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * 将Bitmap转换成文件
+     * 保存文件
+     * @param bm
+     */
+    public static String saveFile(Bitmap bm, String path) {
+        File myCaptureFile = new File(path);
+        OutputStream outputStream = null;
+        try {
+            outputStream = new FileOutputStream(path);
+            if (outputStream != null) {
+                bm.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+                outputStream.close();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return myCaptureFile.toString();
     }
 
     /**

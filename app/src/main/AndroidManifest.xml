@@ -16,12 +16,13 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- 录音 -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <!-- 修改音频设置 -->
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
     <!-- 这个权限用于进行网络定位-->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:name=".MyApplication"
@@ -31,8 +32,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <!--启动页面-->
-        <activity android:name=".StartActivity"
-            android:launchMode="singleTask">
+        <activity android:name=".StartActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -45,15 +45,21 @@
 
         <!--聊天页面-->
         <activity android:name=".chat.ChatActivity"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize"/>
 
         <!--显示大图-->
         <activity android:name=".chat.BigImageActivity"/>
 
+        <!--Image Selector Entry-->
+        <activity
+            android:configChanges="orientation|screenSize"
+            android:name="me.nereo.multi_image_selector.MultiImageSelectorActivity" />
+
 
         <!-- 设置环信应用的AppKey -->
         <meta-data android:name="EASEMOB_APPKEY"
-            android:value="1115161018115859#appdemo" />
+            android:value="easemob-demo#pingantest" />
         <!-- 声明SDK所需的service SDK核心功能-->
         <service android:name="com.hyphenate.chat.EMChatService" android:exported="true"/>
         <!-- 声明SDK所需的receiver -->

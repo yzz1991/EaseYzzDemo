@@ -79,7 +79,7 @@ public class Recorder {
          * 设置音频文件编码格式，这里设置默认
          * https://developer.android.com/reference/android/media/MediaRecorder.AudioEncoder.html
          */
-        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.DEFAULT);
+        mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.AMR_NB);
         /**
          * 设置音频文件输出格式
          * https://developer.android.com/reference/android/media/MediaRecorder.OutputFormat.html
@@ -87,6 +87,7 @@ public class Recorder {
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
         // 设置录音最大持续时间
         mMediaRecorder.setMaxDuration(maxDuration);
+        mMediaRecorder.setAudioChannels(1); // MONO
         // 设置音频采样率
         mMediaRecorder.setAudioSamplingRate(samplingRate);
         // 设置音频编码比特率
